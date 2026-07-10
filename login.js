@@ -8,7 +8,7 @@ import {
   getDoc, 
   signInWithEmailAndPassword, 
   idToEmail 
-} from "./firebase-config.js?v=1"; // Keshni chetlab o'tish uchun ?v=1
+} from "./firebase-config.js"; // Keshni chetlab o'tish uchun ?v=1
 
 // Sahifadagi yagona formani ushlaymiz
 const form = document.querySelector("form");
