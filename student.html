@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O'quvchi paneli — Kelajak Texnologiyalari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="utilities.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body class="kt-body kt-dash-body">
+
+<aside class="kt-sidebar" id="sidebar">
+  <div class="kt-sidebar-brand">
+    <img src="KT_logo.png" class="w-10 h-10 rounded-full kt-logo-img" alt="Logo">
+    <span>O'QUVCHI PANELI</span>
+  </div>
+  <a class="kt-side-link active" data-view="today">📘 Bugungi mavzu</a>
+  <a class="kt-side-link" data-view="profile">🧑 Profil</a>
+  <a class="kt-side-link" data-view="rating">🏆 Reyting</a>
+  <a class="kt-side-link" data-view="ai">🤖 AI yordamchi</a>
+  <div class="kt-side-foot">
+    <p id="stuNameLabel" style="color:var(--dim);font-size:.8rem;margin-bottom:.7rem;">Yuklanmoqda...</p>
+    <button id="logoutBtn" class="kt-logout-btn">Chiqish</button>
+  </div>
+</aside>
+
+<main class="kt-main">
+  <div class="kt-main-top">
+    <div>
+      <p class="kt-eyebrow">O'QUVCHI</p>
+      <h1 class="kt-h2">Salom, <span id="greetName">o'quvchi</span>!</h1>
+    </div>
+    <button id="mobileSidebarBtn" class="kt-profile-icon md:hidden">☰</button>
+  </div>
+
+  <!-- BUGUNGI MAVZU -->
+  <section class="kt-view active" data-view-panel="today">
+    <div class="kt-topic-hero mb-6">
+      <p class="kt-topic-date" id="todayDate">—</p>
+      <h2 class="kt-h2 mt-2 mb-2" id="todayTopicTitle">Yuklanmoqda...</h2>
+      <p style="color:var(--dim);" id="todayTopicMeta"></p>
+    </div>
+    <div class="kt-dash-card">
+      <h3>So'nggi mavzular</h3>
+      <div id="recentTopicsList" style="display:flex;flex-direction:column;gap:.6rem;"></div>
+    </div>
+  </section>
+
+  <!-- PROFIL -->
+  <section class="kt-view" data-view-panel="profile">
+    <div class="kt-dash-card" style="max-width:480px;">
+      <h3>Mening profilim</h3>
+      <div class="kt-avatar-wrap">
+        <img id="avatarImg" class="kt-avatar-img" src="" alt="Profil rasmi">
+        <label class="kt-avatar-edit" for="avatarInput">✎</label>
+        <input type="file" id="avatarInput" accept="image/*" class="hidden">
+      </div>
+      <p id="avatarUploadStatus" style="text-align:center;color:var(--dim);font-size:.8rem;margin-bottom:1rem;"></p>
+      <div class="flex flex-col gap-3">
+        <div><label class="kt-field-label">Ism familiya</label><input id="profIsmFamiliya" class="kt-login-input" disabled></div>
+        <div><label class="kt-field-label">Sinf</label><input id="profSinf" class="kt-login-input" disabled></div>
+        <div><label class="kt-field-label">ID</label><input id="profId" class="kt-login-input" disabled></div>
+      </div>
+      <h3 class="mt-6">Parolni o'zgartirish</h3>
+      <form id="changePassForm" class="flex flex-col gap-3">
+        <input id="newPass1" class="kt-login-input" type="password" placeholder="Yangi parol (kamida 6 belgi)" required>
+        <input id="newPass2" class="kt-login-input" type="password" placeholder="Yangi parolni takrorlang" required>
+        <button type="submit" class="kt-btn-primary" style="align-self:flex-start;">Saqlash</button>
+      </form>
+      <p id="passChangeMsg" class="mt-2"></p>
+    </div>
+  </section>
+
+  <!-- REYTING -->
+  <section class="kt-view" data-view-panel="rating">
+    <div class="grid sm:grid-cols-2 gap-5 mb-6">
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="myBall">0</p><p class="kt-stat-label">Mening ballim</p></div>
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="myRank">—</p><p class="kt-stat-label">Sinfdagi o'rnim</p></div>
+    </div>
+    <div class="kt-dash-card">
+      <h3>Sinf reytingi</h3>
+      <div style="overflow-x:auto;">
+        <table class="kt-table">
+          <thead><tr><th>#</th><th>Ism familiya</th><th>Ball</th></tr></thead>
+          <tbody id="ratingTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI YORDAMCHI -->
+  <section class="kt-view" data-view-panel="ai">
+    <div class="kt-dash-card">
+      <h3>AI yordamchi</h3>
+      <p style="color:var(--dim);font-size:.82rem;margin-bottom:1rem;">Hozircha oddiy (kalit so'zga asoslangan) yordamchi. Kelajakda haqiqiy AI (masalan Claude yoki ChatGPT API) ulanishi mumkin.</p>
+      <div class="kt-chat-box">
+        <div class="kt-chat-messages" id="chatMessages">
+          <div class="kt-chat-msg bot">Salom! Menga Python, HTML/CSS, AI yoki kiberxavfsizlik haqida savol bering.</div>
+        </div>
+        <div class="kt-chat-input-row">
+          <input id="chatInput" class="kt-login-input" placeholder="Savolingizni yozing...">
+          <button id="chatSendBtn" class="kt-btn-primary">Yuborish</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toastContainer" class="kt-toast-container"></div>
+<script type="module" src="student.js"></script>
+</body>
+</html>

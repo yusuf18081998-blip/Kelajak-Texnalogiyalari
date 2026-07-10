@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Kelajak Texnologiyalari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="utilities.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body class="kt-body kt-dash-body">
+
+<aside class="kt-sidebar" id="sidebar">
+  <div class="kt-sidebar-brand">
+    <img src="KT_logo.png" class="w-10 h-10 rounded-full kt-logo-img" alt="Logo">
+    <span>ADMIN PANEL</span>
+  </div>
+  <a class="kt-side-link active" data-view="overview">📊 Bosh sahifa</a>
+  <a class="kt-side-link" data-view="addStudent">➕ O'quvchi qo'shish</a>
+  <a class="kt-side-link" data-view="students">🏆 O'quvchilar / Reyting</a>
+  <a class="kt-side-link" data-view="ishreja">📅 Ish reja yuklash</a>
+  <a class="kt-side-link" data-view="activity">🟢 Faoliyat monitoring</a>
+  <div class="kt-side-foot">
+    <p id="adminNameLabel" style="color:var(--dim);font-size:.8rem;margin-bottom:.7rem;">Yuklanmoqda...</p>
+    <button id="logoutBtn" class="kt-logout-btn">Chiqish</button>
+  </div>
+</aside>
+
+<main class="kt-main">
+  <div class="kt-main-top">
+    <div>
+      <p class="kt-eyebrow">ADMIN</p>
+      <h1 class="kt-h2">Boshqaruv paneli</h1>
+    </div>
+    <button id="mobileSidebarBtn" class="kt-profile-icon md:hidden">☰</button>
+  </div>
+
+  <!-- BOSH SAHIFA / STATISTIKA -->
+  <section class="kt-view active" data-view-panel="overview">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statTotal">0</p><p class="kt-stat-label">Jami o'quvchi</p></div>
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statOnline">0</p><p class="kt-stat-label">Hozir onlayn</p></div>
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statTopics">0</p><p class="kt-stat-label">Yuklangan mavzular</p></div>
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statAvgBall">0</p><p class="kt-stat-label">O'rtacha ball</p></div>
+    </div>
+    <div class="kt-dash-card">
+      <h3>Sinflar bo'yicha taqsimot</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="gradeDistribution"></div>
+    </div>
+  </section>
+
+  <!-- O'QUVCHI QO'SHISH -->
+  <section class="kt-view" data-view-panel="addStudent">
+    <div class="kt-dash-card">
+      <h3>Yangi o'quvchi qo'shish</h3>
+      <form id="addStudentForm" class="kt-form-grid">
+        <div><label class="kt-field-label">Ism</label><input id="stuIsm" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Familiya</label><input id="stuFamiliya" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Sinf</label>
+          <select id="stuSinf" class="kt-select" required>
+            <option value="5">5-sinf</option><option value="6">6-sinf</option>
+            <option value="7">7-sinf</option><option value="8">8-sinf</option>
+          </select>
+        </div>
+        <div><label class="kt-field-label">Guruh (ixtiyoriy)</label><input id="stuGuruh" class="kt-login-input" placeholder="masalan: 5-A"></div>
+        <div><label class="kt-field-label">ID (login uchun)</label><input id="stuId" class="kt-login-input" placeholder="masalan: 5a_ali01" required></div>
+        <div><label class="kt-field-label">Parol</label><input id="stuParol" class="kt-login-input" placeholder="kamida 6 ta belgi" required></div>
+        <div class="sm:col-span-2 lg:col-span-3">
+          <button type="submit" class="kt-btn-primary" id="addStudentBtn">O'quvchi qo'shish</button>
+        </div>
+      </form>
+      <p id="addStudentMsg" class="mt-4"></p>
+    </div>
+  </section>
+
+  <!-- O'QUVCHILAR / REYTING -->
+  <section class="kt-view" data-view-panel="students">
+    <div class="kt-dash-card">
+      <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+        <h3 style="margin:0;">O'quvchilar ro'yxati va reyting</h3>
+        <select id="studentsGradeFilter" class="kt-select" style="max-width:160px;">
+          <option value="all">Barcha sinflar</option>
+          <option value="5">5-sinf</option><option value="6">6-sinf</option>
+          <option value="7">7-sinf</option><option value="8">8-sinf</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="kt-table">
+          <thead><tr><th>#</th><th>Ism familiya</th><th>Sinf</th><th>ID</th><th>Ball</th><th>Amal</th></tr></thead>
+          <tbody id="studentsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ISH REJA YUKLASH -->
+  <section class="kt-view" data-view-panel="ishreja">
+    <div class="kt-dash-card">
+      <h3>Yangi mavzu / ish reja qo'shish</h3>
+      <form id="ishRejaForm" class="kt-form-grid">
+        <div><label class="kt-field-label">Sinf</label>
+          <select id="irSinf" class="kt-select" required>
+            <option value="5">5-sinf</option><option value="6">6-sinf</option>
+            <option value="7">7-sinf</option><option value="8">8-sinf</option>
+          </select>
+        </div>
+        <div><label class="kt-field-label">Sana</label><input id="irSana" type="date" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Chorak</label>
+          <select id="irChorak" class="kt-select">
+            <option>I chorak</option><option>II chorak</option><option>III chorak</option><option>IV chorak</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-3"><label class="kt-field-label">Mavzu</label><input id="irMavzu" class="kt-login-input" placeholder="Masalan: Python — funksiyalar" required></div>
+        <div class="sm:col-span-2 lg:col-span-3">
+          <button type="submit" class="kt-btn-primary">Qo'shish</button>
+        </div>
+      </form>
+      <p id="ishRejaMsg" class="mt-4"></p>
+    </div>
+    <div class="kt-dash-card">
+      <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+        <h3 style="margin:0;">Yuklangan mavzular</h3>
+        <select id="ishRejaGradeFilter" class="kt-select" style="max-width:160px;">
+          <option value="all">Barcha sinflar</option>
+          <option value="5">5-sinf</option><option value="6">6-sinf</option>
+          <option value="7">7-sinf</option><option value="8">8-sinf</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="kt-table">
+          <thead><tr><th>Sana</th><th>Sinf</th><th>Chorak</th><th>Mavzu</th><th>Amal</th></tr></thead>
+          <tbody id="ishRejaTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAOLIYAT MONITORING -->
+  <section class="kt-view" data-view-panel="activity">
+    <div class="kt-dash-card">
+      <h3>O'quvchilar faoliyati (jonli)</h3>
+      <p style="color:var(--dim);font-size:.85rem;margin-bottom:1rem;">So'nggi 90 soniya ichida faol bo'lgan o'quvchilar "onlayn" deb belgilanadi.</p>
+      <div style="overflow-x:auto;">
+        <table class="kt-table">
+          <thead><tr><th>Holat</th><th>Ism familiya</th><th>Sinf</th><th>Hozir qayerda</th><th>So'nggi faollik</th></tr></thead>
+          <tbody id="activityTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toastContainer" class="kt-toast-container"></div>
+<script type="module" src="admin.js"></script>
+</body>
+</html>

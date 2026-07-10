@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tizimga kirish — Kelajak Texnologiyalari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="utilities.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body class="kt-body kt-auth-body">
+  <div class="kt-grid-bg"></div>
+  <div class="kt-auth-wrap">
+    <div class="kt-auth-card">
+      <div class="flex items-center gap-3 justify-center mb-6">
+        <img src="KT_logo.png" alt="Logotip" class="w-14 h-14 rounded-full kt-logo-img">
+      </div>
+      <p class="kt-eyebrow text-center mb-1">KELAJAK TEXNOLOGIYALARI</p>
+      <h1 class="kt-h2 text-center mb-8">Tizimga kirish</h1>
+
+      <form id="loginForm" class="flex flex-col gap-4">
+        <input id="loginId" class="kt-login-input" type="text" placeholder="ID (masalan: 5a_ali01 yoki admin)" required autocomplete="off">
+        <input id="loginPass" class="kt-login-input" type="password" placeholder="Parol" required>
+        <button type="submit" class="kt-btn-primary w-full text-center" id="loginSubmitBtn">Kirish</button>
+      </form>
+      <p id="loginError" class="kt-error-text hidden mt-4"></p>
+      <p class="kt-auth-note mt-6">ID va parolni to'garak rahbari (admin) beradi. Agar unutgan bo'lsangiz, rahbaringizga murojaat qiling.</p>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="kt-toast-container"></div>
+  <!-- Oxiriga mana bunday versiya qo'shing: -->
+<script type="module" src="login.js?v=1.1"></script>
+</body>
+</html>
