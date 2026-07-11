@@ -20,7 +20,7 @@
   <a class="kt-side-link active" data-view="overview">📊 Bosh sahifa</a>
   <a class="kt-side-link" data-view="addStudent">➕ O'quvchi qo'shish</a>
   <a class="kt-side-link" data-view="students">🏆 O'quvchilar / Reyting</a>
-  <a class="kt-side-link" data-view="ishreja">📅 Ish reja</a> <!-- SHUNCHAKI ISH REJA DEB O'ZGARTIRILDI -->
+  <a class="kt-side-link" data-view="ishreja">📅 Ish reja</a>
   <a class="kt-side-link" data-view="nazorat_ishi">🏆 Nazorat ishi</a>
   <a class="kt-side-link" data-view="nizom_huquq">📜 Nizom va huquq</a>
   <a class="kt-side-link" data-view="activity">🟢 Faoliyat monitoring</a>
@@ -96,23 +96,29 @@
     </div>
   </section>
 
-  <!-- TOZALANGAN ISH REJA BO'LIMI (FAQAT ISH REJALARNING O'ZI TURIBDI) -->
+  <!-- ISH REJA BO'LIMI -->
   <section class="kt-view" data-view-panel="ishreja">
     <div class="kt-dash-card">
-      <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
-        <h3 style="margin:0; color:#00ff88;">📅 To'garak Yillik Ish Rejalari</h3>
-        <select id="ishRejaGradeFilter" class="kt-select" style="max-width:200px;">
-          <option value="all">Sinfni tanlang</option>
-          <option value="5">5-sinf</option><option value="6">6-sinf</option>
-          <option value="7">7-sinf</option><option value="8">8-sinf</option>
-        </select>
-      </div>
-      <p style="color:var(--dim); font-size:0.9rem; margin-bottom:20px;">Sinf tanlanganda o'sha sinf bo'yicha tasdiqlangan yillik kalendar reja hujjati yuklab olish uchun taqdim etiladi.</p>
-
-      <div id="pdfIshRejaBox" style="display:none; padding:20px; background:rgba(0,255,136,0.05); border-left:4px solid #00ff88; border-radius:4px;">
-        <h4 id="ishRejaTitle" style="margin:0 0 10px 0; color:#00ff88;">📅 Yillik Ish Reja</h4>
-        <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">Ushbu hujjatda to'garak dars soatlari, choraklik mavzular taqsimoti va dars rejalari batafsil yozilgan.</p>
-        <a id="btnMainIshReja" href="#" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:8px 16px;">📥 PDF Faylni ko'rish / Yuklash</a>
+      <h3 style="margin:0 0 10px 0; color:#00ff88;">📅 To'garak Yillik Ish Rejalari</h3>
+      <p style="color:var(--dim); font-size:0.9rem; margin-bottom:20px;">Tasdiqlangan kalendar ish rejalar ro'yxati. Ko'rish tugmasini bossangiz, PDF hujjat ochiladi:</p>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📅 5-Sinf Ish Rejasi</h4>
+          <a href="KT_5sinf_Ish_Reja.pdf" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📅 6-Sinf Ish Rejasi</h4>
+          <a href="KT_6sinf_Ish_Reja.pdf" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📅 7-Sinf Ish Rejasi</h4>
+          <a href="KT_7sinf_Ish_Reja.pdf" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📅 8-Sinf Ish Rejasi</h4>
+          <a href="KT_8sinf_Ish_Reja.pdf" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
       </div>
     </div>
   </section>
@@ -120,19 +126,26 @@
   <!-- NAZORAT ISHLARI BO'LIMI -->
   <section class="kt-view" data-view-panel="nazorat_ishi">
     <div class="kt-dash-card">
-      <h3 style="color:#ff4a76; margin-bottom:15px;">🏆 Nazorat Ishlari va Rasmiy Javoblar</h3>
-      <p style="color:var(--dim); font-size:0.9rem; margin-bottom:20px;">Sinfni tanlang, tizim sizga o'sha sinfning choraklik nazorat ishlari kalitlarini onlayn chiqarib beradi:</p>
+      <h3 style="color:#ff4a76; margin:0 0 10px 0;">🏆 Nazorat Ishlari va Javoblar</h3>
+      <p style="color:var(--dim); font-size:0.9rem; margin-bottom:20px;">Sinf monitoringi uchun choraklik nazorat ishi savollari hamda rasmiy to'g'ri javoblar kalitlari:</p>
       
-      <select id="nazoratGradeFilter" class="kt-select" style="max-width:200px; margin-bottom:20px;">
-        <option value="all">Sinfni tanlang</option>
-        <option value="5">5-sinf</option><option value="6">6-sinf</option>
-        <option value="7">7-sinf</option><option value="8">8-sinf</option>
-      </select>
-
-      <div id="pdfNazoratBox" style="display:none; padding:20px; background:rgba(255,74,118,0.05); border-left:4px solid #ff4a76; border-radius:4px;">
-        <h4 id="nazoratTitle" style="margin:0 0 10px 0; color:#ff4a76;">Nazorat Ishi Kalitlari</h4>
-        <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">Ushbu hujjatda to'garak monitoringi uchun barcha choraklik nazorat ishi savollari va javoblari jamlangan.</p>
-        <a id="btnNazoratJavob" href="#" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:8px 16px;">📥 PDF Faylni ochish</a>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🏆 5-Sinf Nazorat ishi javoblari</h4>
+          <a href="KT_5sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🏆 6-Sinf Nazorat ishi javoblari</h4>
+          <a href="KT_6sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🏆 7-Sinf Nazorat ishi javoblari</h4>
+          <a href="KT_7sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🏆 8-Sinf Nazorat ishi javoblari</h4>
+          <a href="KT_8sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
       </div>
     </div>
   </section>
@@ -145,22 +158,22 @@
         <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
           <h4 style="margin:0 0 10px 0; color:#fff;">📝 To'garak a'zolik arizasi</h4>
           <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">O'quvchilarni to'garakka qabul qilishda ota-onalardan olinadigan rasmiy ariza shakli.</p>
-          <a href="KT_Ariza.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">📥 Arizani yuklab olish</a>
+          <a href="KT_Ariza.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">👁️ Ko'rish</a>
         </div>
         <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
           <h4 style="margin:0 0 10px 0; color:#fff;">📘 To'garak ichki dars nizomlari</h4>
           <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">Kelajak Texnologiyalari klubining yillik tasdiqlangan ichki intizom va tartib qoidalari.</p>
-          <a href="KT_Dars_Nizomlari.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">📥 Nizomni ko'rish</a>
+          <a href="KT_Dars_Nizomlari.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">👁️ Ko'rish</a>
         </div>
         <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
           <h4 style="margin:0 0 10px 0; color:#fff;">⚖️ O'quvchilar majburiyatlari va huquqlari</h4>
           <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">To'garak jarayonida o'quvchi hamda ustozning huquqlari va texnika xavfsizligi daftari.</p>
-          <a href="KT_Huquqlar_Daftari.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">📥 Huquqlar daftarini ochish</a>
+          <a href="KT_Huquqlar_Daftari.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">👁️ Ko'rish</a>
         </div>
         <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
           <h4 style="margin:0 0 10px 0; color:#fff;">🎖️ To'garak tashkil etilganligi haqida tasdiqnoma</h4>
           <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">Maktab ma'muriyati tomonidan to'garak faoliyatini yuritishga berilgan ruxsatnoma guvohnomasi.</p>
-          <a href="KT_Tasdiqnoma.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">📥 Guvohnomani ko'rish</a>
+          <a href="KT_Tasdiqnoma.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">👁️ Ko'rish</a>
         </div>
       </div>
     </div>
