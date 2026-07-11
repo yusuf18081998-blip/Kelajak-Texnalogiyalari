@@ -27,7 +27,7 @@ import {
 
 const firebaseConfig = {
   // ⚠️ SHU YERGA FIREBASE KONSOLIDAN OLINGAN TO'G'RI WEB API KEYINGIZNI QO'YING:
-  apiKey: "AIzaSyBclBgDzUtL66p3ws-j_1uu0dqWGb_Y5_U", 
+  apiKey: "AIzaSyBg1rqBJtTlsapTrws-j-laa0dqUzB_y-4", 
   authDomain: "kelajak-texnalogiyalari.firebaseapp.com",
   projectId: "kelajak-texnalogiyalari",
   storageBucket: "kelajak-texnalogiyalari.appspot.com",
