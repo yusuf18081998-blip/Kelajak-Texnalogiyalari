@@ -1,5 +1,5 @@
 // ==========================================================================
-// LOGIN LOGIKASI (MUTLAQO XAVFSIZ VA SINMAYDIGAN VARIANT)
+// LOGIN SAHIFASI LOGIKASI (GITHUB PAGES UCHUN INTERNETDA SINMAYDIGAN VARIANT)
 // ==========================================================================
 import { 
   auth, 
@@ -8,13 +8,13 @@ import {
   getDoc, 
   signInWithEmailAndPassword, 
   idToEmail 
-} from "./firebase-config.js"; // Keshni chetlab o'tish uchun ?v=1
+} from "./firebase-config.js"; // GitHub uchun toza va to'g'ri havola
 
-// Sahifadagi yagona formani ushlaymiz
+// Sahifadagi yagona formani aniqlaymiz
 const form = document.querySelector("form");
 
 if (form) {
-  // Xatolik matni uchun joy tayyorlaymiz
+  // Xatolik matnini chiqarish uchun joy tayyorlaymiz
   let errorDiv = document.getElementById("loginError");
   if (!errorDiv) {
     errorDiv = document.createElement("p");
@@ -22,22 +22,23 @@ if (form) {
     errorDiv.style.color = "#ff4a76";
     errorDiv.style.marginTop = "15px";
     errorDiv.style.textAlign = "center";
+    errorDiv.style.fontWeight = "500";
     form.appendChild(errorDiv);
   }
 
   form.addEventListener("submit", async (e) => {
-    // 1. Sahifa yangilanib ketishini birinchi bo'lib TO'XTTAMIZ!
+    // Sahifa yangilanib, so'rov belgilari (?/?) chiqib ketishini qat'iy to'xtatamiz
     e.preventDefault(); 
     
     errorDiv.innerText = "Tekshirilmoqda...";
     errorDiv.style.color = "#00e5ff";
 
-    // 2. Element id-lariga bog'lanmasdan, formadan qiymatlarni olamiz
+    // Element ID-lariga yopishmasdan, inputlarni turi bo'yicha sug'urib olamiz
     const textInput = form.querySelector("input[type='text']");
     const passwordInput = form.querySelector("input[type='password']");
 
     if (!textInput || !passwordInput) {
-      errorDiv.innerText = "Xato: Input elementlari topilmadi!";
+      errorDiv.innerText = "Xatolik: Kirish maydonlari topilmadi!";
       errorDiv.style.color = "#ff4a76";
       return;
     }
@@ -46,20 +47,20 @@ if (form) {
     const password = passwordInput.value;
 
     if (!inputId || !password) {
-      errorDiv.innerText = "Iltimos, ID va parolni kiriting!";
+      errorDiv.innerText = "Iltimos, ID va parolni to'liq kiriting!";
       errorDiv.style.color = "#ff4a76";
       return;
     }
 
-    // ID-ni email formatiga o'tkazamiz
+    // ID-ni maxsus email formatga o'tkazamiz
     const formattedEmail = idToEmail(inputId);
 
     try {
-      // Firebase Auth orqali kirish
+      // Firebase Auth orqali tizimga kirish
       const userCredential = await signInWithEmailAndPassword(auth, formattedEmail, password);
       const user = userCredential.user;
 
-      // Firestore rolni tekshirish
+      // Firestore bazasidan foydalanuvchining rolini tekshiramiz
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
@@ -70,20 +71,23 @@ if (form) {
         errorDiv.innerText = "Muvaffaqiyatli! Yo'naltirilmoqda...";
         errorDiv.style.color = "#00ff88";
 
+        // Rolga qarab sahifaga yo'naltirish
         if (role === "admin") {
           window.location.href = "admin.html";
         } else {
           window.location.href = "student.html";
         }
       } else {
-        errorDiv.innerText = "Bazada foydalanuvchi roli topilmadi!";
+        errorDiv.innerText = "Tizimda sizning rolingiz aniqlanmadi!";
         errorDiv.style.color = "#ff4a76";
       }
 
     } catch (error) {
-      console.error("Xatolik:", error);
+      console.error("Firebase auth xatosi:", error);
       if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
         errorDiv.innerText = "ID yoki parol noto'g'ri!";
+      } else if (error.code === "auth/api-key-not-valid") {
+        errorDiv.innerText = "Firebase API Key xato! Konsoldan yangilang.";
       } else {
         errorDiv.innerText = `Xatolik: ${error.message}`;
       }
@@ -91,5 +95,5 @@ if (form) {
     }
   });
 } else {
-  alert("HTML ichida <form> tegi topilmadi! Shuning uchun JS ishlamayapti.");
+  console.error("HTML tarkibida hech qanday <form> tegi topilmadi!");
 }
