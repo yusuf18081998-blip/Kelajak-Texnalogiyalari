@@ -50,10 +50,11 @@ function idToEmail(id) {
   return `${id}@kt-portal.local`; 
 }
 
-// Barcha sahifalar foydalanishi uchun eksport qilamiz
+// FIREBASE-CONFIG.JS ENGI PASTKI QISMI:
 export { 
   auth, db, secondaryAuth, idToEmail,
   onAuthStateChanged, signOut, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, // <-- MANA SHU QATORNI QO'SHISH SHART!
   doc, setDoc, getDoc, updateDoc, deleteDoc,
   collection, query, where, orderBy, onSnapshot, serverTimestamp, increment
 };
