@@ -21,7 +21,6 @@
   <a class="kt-side-link" data-view="addStudent">➕ O'quvchi qo'shish</a>
   <a class="kt-side-link" data-view="students">🏆 O'quvchilar / Reyting</a>
   <a class="kt-side-link" data-view="ishreja">📅 Ish reja yuklash</a>
-  <a class="kt-side-link" data-view="documents">📜 To'garak hujjatlari</a> <!-- YANGI BO'LIM -->
   <a class="kt-side-link" data-view="activity">🟢 Faoliyat monitoring</a>
   <div class="kt-side-foot">
     <p id="adminNameLabel" style="color:var(--dim);font-size:.8rem;margin-bottom:.7rem;">Yuklanmoqda...</p>
@@ -120,9 +119,55 @@
       </form>
       <p id="ishRejaMsg" class="mt-4"></p>
     </div>
+
+    <!-- DINAMIK ONLAYN HUJJATLAR (SINF TANLANGANDA O'ZGARADI) -->
+    <div id="pdfDownloadCard" style="display: none; margin-bottom: 24px;">
+      <div class="grid sm:grid-cols-2 gap-4">
+        
+        <!-- Ish reja bo'limi -->
+        <div class="kt-dash-card" style="margin:0; border-left: 4px solid #00ff88;">
+          <h4 id="ishRejaTitle" style="margin: 0 0 10px 0; color: #00ff88;">📅 Yillik Ish Reja</h4>
+          <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">Tanlangan sinfning to'liq tasdiqlangan choraklik dars rejalari.</p>
+          <a id="btnMainIshReja" href="#" target="_blank" class="kt-btn-primary" style="background: #00ff88; color: #000; text-align:center; display:block; text-decoration:none; font-weight:bold;">Ochish / Yuklab olish</a>
+        </div>
+
+        <!-- Nazorat ishi bo'limi -->
+        <div class="kt-dash-card" style="margin:0; border-left: 4px solid #ff4a76;">
+          <h4 id="nazoratTitle" style="margin: 0 0 10px 0; color: #ff4a76;">🏆 Nazorat Ishi Javoblari</h4>
+          <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">O'quvchilar oladigan nazorat va imtihon ishlarining rasmiy kalitlari.</p>
+          <a id="btnNazoratJavob" href="#" target="_blank" class="kt-btn-primary" style="background: #ff4a76; color: #fff; text-align:center; display:block; text-decoration:none; font-weight:bold;">Ochish / Yuklab olish</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DOIMO KO'RINIB TURUVCHU NIZOM VA HUQUQLAR BO'LIMI -->
+    <div class="kt-dash-card" style="margin-bottom: 24px;">
+      <h3 style="color: var(--accent, #00e5ff); margin-bottom: 12px;">📜 To'garak Nizomlari va Huquqiy Hujjatlar</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <a href="KT_Ariza.pdf" target="_blank" class="kt-dash-card text-center" style="margin:0; padding:15px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); text-decoration:none;">
+          <p style="font-size:1.5rem; margin-bottom:5px;">📝</p>
+          <span style="color:#fff; font-size:0.85rem; font-weight:500;">To'garak Arizasi</span>
+        </a>
+        <a href="KT_Dars_Nizomlari.pdf" target="_blank" class="kt-dash-card text-center" style="margin:0; padding:15px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); text-decoration:none;">
+          <p style="font-size:1.5rem; margin-bottom:5px;">📘</p>
+          <span style="color:#fff; font-size:0.85rem; font-weight:500;">Dars Nizomlari</span>
+        </a>
+        <a href="KT_Huquqlar_Daftari.pdf" target="_blank" class="kt-dash-card text-center" style="margin:0; padding:15px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); text-decoration:none;">
+          <p style="font-size:1.5rem; margin-bottom:5px;">⚖️</p>
+          <span style="color:#fff; font-size:0.85rem; font-weight:500;">Huquqlar Daftari</span>
+        </a>
+        <a href="KT_Tasdiqnoma.pdf" target="_blank" class="kt-dash-card text-center" style="margin:0; padding:15px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); text-decoration:none;">
+          <p style="font-size:1.5rem; margin-bottom:5px;">🎖️</p>
+          <span style="color:#fff; font-size:0.85rem; font-weight:500;">Tasdiqnoma</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- MAVZULAR RO'YXATI -->
     <div class="kt-dash-card">
       <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
-        <h3 style="margin:0;">Yuklangan mavzular</h3>
+        <h3 style="margin:0;">Yuklangan dars mavzulari</h3>
         <select id="ishRejaGradeFilter" class="kt-select" style="max-width:160px;">
           <option value="all">Barcha sinflar</option>
           <option value="5">5-sinf</option><option value="6">6-sinf</option>
@@ -134,75 +179,6 @@
           <thead><tr><th>Sana</th><th>Sinf</th><th>Chorak</th><th>Mavzu</th><th>Amal</th></tr></thead>
           <tbody id="ishRejaTableBody"></tbody>
         </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- TO'GARAK HUJJATLARI SEKTORI (RASMDAGI BARCHA FAYLLAR SHU YERDA) -->
-  <section class="kt-view" data-view-panel="documents">
-    <div class="kt-dash-card">
-      <h3 style="color: var(--accent, #00e5ff); margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
-        📁 To'garak Ish Rejalari va Nazorat Ishlari
-      </h3>
-      <div style="overflow-x:auto;">
-        <table class="kt-table">
-          <thead>
-            <tr>
-              <th>Sinf nomi</th>
-              <th style="text-align: center;">Yillik Ish Reja</th>
-              <th style="text-align: center;">Nazorat Ishlari Javoblari</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>5 - Sinf</strong></td>
-              <td style="text-align: center;"><a href="KT_5sinf_Ish_Reja.pdf" target="_blank" style="color: #00ff88; text-decoration: none;">📥 Yuklab olish</a></td>
-              <td style="text-align: center;"><a href="KT_5sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" style="color: #ff4a76; text-decoration: none;">📥 Yuklab olish</a></td>
-            </tr>
-            <tr>
-              <td><strong>6 - Sinf</strong></td>
-              <td style="text-align: center;"><a href="KT_6sinf_Ish_Reja.pdf" target="_blank" style="color: #00ff88; text-decoration: none;">📥 Yuklab olish</a></td>
-              <td style="text-align: center;"><a href="KT_6sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" style="color: #ff4a76; text-decoration: none;">📥 Yuklab olish</a></td>
-            </tr>
-            <tr>
-              <td><strong>7 - Sinf</strong></td>
-              <td style="text-align: center;"><a href="KT_7sinf_Ish_Reja.pdf" target="_blank" style="color: #00ff88; text-decoration: none;">📥 Yuklab olish</a></td>
-              <td style="text-align: center;"><a href="KT_7sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" style="color: #ff4a76; text-decoration: none;">📥 Yuklab olish</a></td>
-            </tr>
-            <tr>
-              <td><strong>8 - Sinf</strong></td>
-              <td style="text-align: center;"><a href="KT_8sinf_Ish_Reja.pdf" target="_blank" style="color: #00ff88; text-decoration: none;">📥 Yuklab olish</a></td>
-              <td style="text-align: center;"><a href="KT_8sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" style="color: #ff4a76; text-decoration: none;">📥 Yuklab olish</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="kt-dash-card" style="margin-top: 20px;">
-      <h3 style="color: var(--accent, #00e5ff); margin-bottom: 1.5rem;">📜 Nizomlar, Arizalar va Tasdiqnomalar</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
-        
-        <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
-          <h4 style="margin: 0 0 15px 0;">📝 To'garak Arizasi</h4>
-          <a href="KT_Ariza.pdf" target="_blank" style="display: block; background: linear-gradient(135deg, #00e5ff, #00aaff); color: #000; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Ko'rish / PDF</a>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
-          <h4 style="margin: 0 0 15px 0;">📘 Dars Nizomlari</h4>
-          <a href="KT_Dars_Nizomlari.pdf" target="_blank" style="display: block; background: linear-gradient(135deg, #00e5ff, #00aaff); color: #000; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Ko'rish / PDF</a>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
-          <h4 style="margin: 0 0 15px 0;">⚖️ Huquqlar Daftari</h4>
-          <a href="KT_Huquqlar_Daftari.pdf" target="_blank" style="display: block; background: linear-gradient(135deg, #00e5ff, #00aaff); color: #000; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Ko'rish / PDF</a>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
-          <h4 style="margin: 0 0 15px 0;">🎖️ Tasdiqnoma</h4>
-          <a href="KT_Tasdiqnoma.pdf" target="_blank" style="display: block; background: linear-gradient(135deg, #00e5ff, #00aaff); color: #000; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Ko'rish / PDF</a>
-        </div>
-
       </div>
     </div>
   </section>
