@@ -256,3 +256,33 @@ function renderActivityTable() {
   });
 }
 setInterval(renderActivityTable, 15000);
+// --- ADMIN.JS FAILINGIZNING ENG OXIRIGA SHU KODNI QO'SHING ---
+
+document.addEventListener('DOMContentLoaded', () => {
+  const gradeFilter = document.getElementById('ishRejaGradeFilter');
+  const pdfCard = document.getElementById('pdfDownloadCard');
+  const ishRejaTitle = document.getElementById('ishRejaTitle');
+  const nazoratTitle = document.getElementById('nazoratTitle');
+  const btnIshReja = document.getElementById('btnMainIshReja');
+  const btnNazorat = document.getElementById('btnNazoratJavob');
+
+  if (gradeFilter) {
+    gradeFilter.addEventListener('change', (e) => {
+      const sinf = e.target.value;
+      
+      if (sinf === 'all') {
+        if (pdfCard) pdfCard.style.display = 'none';
+      } else {
+        if (pdfCard) pdfCard.style.display = 'block';
+        
+        // Sarlavhalarni onlayn yangilash
+        if (ishRejaTitle) ishRejaTitle.textContent = `📅 ${sinf}-Sinf Ish Rejasi`;
+        if (nazoratTitle) nazoratTitle.textContent = `🏆 ${sinf}-Sinf Nazorat Ishi Javoblari`;
+        
+        // PDF linklarini dinamik biriktirish
+        if (btnIshReja) btnIshReja.href = `KT_${sinf}sinf_Ish_Reja.pdf`;
+        if (btnNazorat) btnNazorat.href = `KT_${sinf}sinf_Nazorat_Ishlari_Javoblari.pdf`;
+      }
+    });
+  }
+});
