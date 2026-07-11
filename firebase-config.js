@@ -1,5 +1,5 @@
 // ==========================================================================
-// FIREBASE ALL-IN-ONE CONFIG (CDN TO'LIQ MANZILLARI BILAN)
+// FIREBASE ALL-IN-ONE CONFIG (GITHUB PAGES UCHUN ENG TOZA VARIANT)
 // ==========================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
@@ -26,28 +26,31 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  // ⚠️ BU YERGA BOYAGI O'ZINGIZNING TO'G'RI WEB API KEYINGIZNI QO'YING:
-  apiKey: "AIzaSyBg1rqBJtTlsapTrws-j-laa0dqUzB_y-4",
+  // ⚠️ SHU YERGA FIREBASE KONSOLIDAN OLINGAN TO'G'RI WEB API KEYINGIZNI QO'YING:
+  apiKey: "AIzaSyBclBgDzUtL66p3ws-j_1uu0dqWGb_Y5_U", 
   authDomain: "kelajak-texnalogiyalari.firebaseapp.com",
   projectId: "kelajak-texnalogiyalari",
-  storageBucket: "kelajak-texnalogiyalari.firebasestorage.app",
-  messagingSenderId: "415919389784",
-  appId: "1:415919389784:web:f6c88e922486d907c51e2d",
-  measurementId: "G-HEPK72DZCW"
+  storageBucket: "kelajak-texnalogiyalari.appspot.com",
+  messagingSenderId: "41591990724",
+  appId: "1:41591990724:web:f6c88e9224860907c3fead"
 };
 
+// Tizimni ishga tushirish
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Ikkinchi auth (O'quvchi qo'shganda admin sessiyasi o'chmasligi uchun)
 const secondaryApp = initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = getAuth(secondaryApp);
 
+// ID-ni email formatiga o'tkazuvchi yordamchi funksiya
 function idToEmail(id) {
   if (id.includes("@")) return id; 
   return `${id}@kt-portal.local`; 
 }
 
+// Barcha sahifalar foydalanishi uchun eksport qilamiz
 export { 
   auth, db, secondaryAuth, idToEmail,
   onAuthStateChanged, signOut, createUserWithEmailAndPassword,
