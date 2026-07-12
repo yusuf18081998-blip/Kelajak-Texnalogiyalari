@@ -194,6 +194,6 @@
 </main>
 
 <div id="toastContainer" class="kt-toast-container"></div>
-<script type="module" src="admin.js"></script>
+<script type="module" src="./admin.js"></script>
 </body>
 </html>
