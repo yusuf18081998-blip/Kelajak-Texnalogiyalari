@@ -107,6 +107,46 @@ document.getElementById("addStudentForm").addEventListener("submit", async funct
   btn.textContent = "O'quvchi qo'shish";
 });
 
+/* ---------- ADMIN QO'SHISH ---------- */
+document.getElementById("addAdminForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const ism = document.getElementById("adminIsm").value.trim();
+  const familiya = document.getElementById("adminFamiliya").value.trim();
+  const id = document.getElementById("adminId").value.trim().toLowerCase();
+  const parol = document.getElementById("adminParol").value;
+  const msgBox = document.getElementById("addAdminMsg");
+  const btn = document.getElementById("addAdminBtn");
+
+  if (parol.length < 6) {
+    msgBox.textContent = "Parol kamida 6 ta belgidan iborat bo'lishi kerak.";
+    msgBox.className = "kt-error-text mt-4";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Qo'shilmoqda...";
+  try {
+    const email = idToEmail(id);
+    const cred = await createUserWithEmailAndPassword(secondaryAuth, email, parol);
+    await setDoc(doc(db, "users", cred.user.uid), {
+      ism: ism, familiya: familiya, role: "admin",
+      loginId: id, yaratilgan: serverTimestamp()
+    });
+    await signOut(secondaryAuth);
+    showToast(ism + " " + familiya + " admin sifatida qo'shildi. ID: " + id, "success");
+    document.getElementById("addAdminForm").reset();
+    msgBox.textContent = "";
+  } catch (err) {
+    console.error(err);
+    let text = "Xatolik: " + err.message;
+    if (err.code === "auth/email-already-in-use") text = "Bu ID allaqachon band. Boshqa ID tanlang.";
+    msgBox.textContent = text;
+    msgBox.className = "kt-error-text mt-4";
+  }
+  btn.disabled = false;
+  btn.textContent = "Admin qo'shish";
+});
+
 /* ---------- O'QUVCHILAR RO'YXATI / REYTING / STATISTIKA ---------- */
 function initStudentsListener() {
   const q = query(collection(db, "users"), where("role", "==", "student"));
@@ -247,6 +287,7 @@ document.getElementById("currentLessonForm").addEventListener("submit", async fu
 
 function initCurrentLessonPanel() {
   const tbody = document.getElementById("currentLessonTableBody");
+  let topicsSet = 0;
   [5, 6, 7, 8].forEach(function (sinf) {
     onSnapshot(doc(db, "joriy_mavzu", String(sinf)), function (snap) {
       renderCurrentLessonRow(sinf, snap.exists() ? snap.data() : null);
@@ -265,11 +306,13 @@ function initCurrentLessonPanel() {
     }
     if (!data) {
       row.innerHTML = "<td>" + sinf + "-sinf</td><td>—</td><td style='color:var(--dim);'>Hali belgilanmagan</td><td>—</td>";
-      return;
+    } else {
+      const lesson = getLesson(sinf, data.chorakIndex, data.darsIndex);
+      const updated = data.yangilangan && data.yangilangan.toMillis ? new Date(data.yangilangan.toMillis()).toLocaleString("uz-UZ") : "—";
+      row.innerHTML = "<td>" + sinf + "-sinf</td><td>" + (lesson ? lesson.chorak : "—") + "</td><td>" + (lesson ? lesson.dars : "—") + "</td><td>" + updated + "</td>";
     }
-    const lesson = getLesson(sinf, data.chorakIndex, data.darsIndex);
-    const updated = data.yangilangan && data.yangilangan.toMillis ? new Date(data.yangilangan.toMillis()).toLocaleString("uz-UZ") : "—";
-    row.innerHTML = "<td>" + sinf + "-sinf</td><td>" + (lesson ? lesson.chorak : "—") + "</td><td>" + (lesson ? lesson.dars : "—") + "</td><td>" + updated + "</td>";
+    topicsSet = Array.from(tbody.querySelectorAll("tr")).filter(function (r) { return !r.innerHTML.includes("Hali belgilanmagan"); }).length;
+    document.getElementById("statTopics").textContent = topicsSet;
   }
 }
 
