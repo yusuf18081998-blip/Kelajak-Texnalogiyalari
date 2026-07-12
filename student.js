@@ -4,9 +4,10 @@
 import {
   auth, db, storage,
   onAuthStateChanged, signOut, updatePassword,
-  doc, getDoc, updateDoc, collection, query, where, onSnapshot, serverTimestamp, getDocs,
+  doc, getDoc, updateDoc, collection, query, where, onSnapshot,
   ref, uploadBytes, getDownloadURL
 } from "./firebase-config.js";
+import { SYLLABUS, getLesson, flattenGrade } from "./syllabus-data.js";
 
 function showToast(message, type) {
   const container = document.getElementById("toastContainer");
@@ -23,7 +24,6 @@ function showToast(message, type) {
   }, 5000);
 }
 
-// Yuklanish holatini to'xtatib, xatoni EKRANDA ko'rsatuvchi funksiya
 function showFatalError(msg) {
   console.error(msg);
   const titleEl = document.getElementById("todayTopicTitle");
@@ -58,9 +58,9 @@ onAuthStateChanged(auth, async function (user) {
     document.getElementById("profId").value = myData.loginId || "—";
     document.getElementById("avatarImg").src = myData.rasmUrl || defaultAvatar();
 
-    loadTodayTopic();
+    listenCurrentLesson();
     loadRating();
-    heartbeat("Bugungi mavzu");
+    heartbeat("Joriy mavzu");
     setInterval(function () { heartbeat(currentSectionName); }, 30000);
   } catch (error) {
     showFatalError("Ma'lumot yuklashda xato: " + error.code + " — " + error.message);
@@ -78,17 +78,17 @@ function defaultAvatar() {
 }
 
 /* ---------- FAOLIYAT HEARTBEAT ---------- */
-let currentSectionName = "Bugungi mavzu";
+let currentSectionName = "Joriy mavzu";
 async function heartbeat(sectionName) {
   if (!myUid) return;
   try {
-    await updateDoc(doc(db, "users", myUid), { oxirgiBolim: sectionName, oxirgiVaqt: serverTimestamp() });
+    await updateDoc(doc(db, "users", myUid), { oxirgiBolim: sectionName, oxirgiVaqt: new Date() });
   } catch (err) { /* jim turadi — faoliyat yozib bo'lmasa ham sahifa ishlashda davom etadi */ }
 }
 
 /* ---------- SIDEBAR NAVIGATSIYA ---------- */
 const sideLinks = Array.from(document.querySelectorAll(".kt-side-link"));
-const sectionNames = { today: "Bugungi mavzu", profile: "Profil", rating: "Reyting", ai: "AI yordamchi" };
+const sectionNames = { today: "Joriy mavzu", profile: "Profil", rating: "Reyting", ai: "AI yordamchi" };
 sideLinks.forEach(function (link) {
   link.addEventListener("click", function () {
     sideLinks.forEach(function (l) { l.classList.remove("active"); });
@@ -110,43 +110,38 @@ if (mobileBtn) {
   });
 }
 
-/* ---------- BUGUNGI MAVZU ---------- */
-function todayStr() {
-  const d = new Date();
-  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-}
+/* ---------- JORIY MAVZU (SYLLABUS ASOSIDA, JONLI) ---------- */
+function listenCurrentLesson() {
+  document.getElementById("todayDate").textContent = new Date().toLocaleDateString("uz-UZ", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
-async function loadTodayTopic() {
-  try {
-    document.getElementById("todayDate").textContent = new Date().toLocaleDateString("uz-UZ", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-
-    const q = query(collection(db, "ishreja"), where("sinf", "==", myData.sinf));
-    const snap = await getDocs(q);
-    const all = [];
-    snap.forEach(function (d) { all.push(d.data()); });
-
-    all.sort(function (a, b) {
-      return (b.sana || "").localeCompare(a.sana || "");
-    });
-
-    const today = all.find(function (r) { return r.sana === todayStr(); });
-    if (today) {
-      document.getElementById("todayTopicTitle").textContent = today.mavzu;
-      document.getElementById("todayTopicMeta").textContent = (today.chorak || "") + " · " + (today.sana || "");
-    } else {
-      document.getElementById("todayTopicTitle").textContent = "Bugun uchun mavzu hali yuklanmagan";
-      document.getElementById("todayTopicMeta").textContent = "Admin yangi mavzu qo'shganda shu yerda ko'rinadi.";
+  onSnapshot(doc(db, "joriy_mavzu", myData.sinf), function (snap) {
+    if (!snap.exists()) {
+      document.getElementById("todayTopicTitle").textContent = "Hozircha mavzu belgilanmagan";
+      document.getElementById("todayTopicMeta").textContent = "Admin joriy darsni belgilaganda shu yerda ko'rinadi.";
+      document.getElementById("recentTopicsList").innerHTML = "";
+      return;
     }
+    const data = snap.data();
+    const lesson = getLesson(myData.sinf, data.chorakIndex, data.darsIndex);
+    if (!lesson) return;
 
+    document.getElementById("todayTopicTitle").textContent = lesson.dars;
+    document.getElementById("todayTopicMeta").textContent = lesson.chorak + " · " + lesson.mavzu + " · " + lesson.darsRaqami + "-dars";
+
+    const flat = flattenGrade(myData.sinf);
+    const currentFlatIndex = flat.findIndex(function (l) {
+      return l.chorakIndex === data.chorakIndex && l.darsIndex === data.darsIndex;
+    });
     const recentBox = document.getElementById("recentTopicsList");
     recentBox.innerHTML = "";
-    all.slice(0, 6).forEach(function (r) {
+    const previous = flat.slice(0, currentFlatIndex + 1).reverse().slice(0, 6);
+    previous.forEach(function (l) {
       recentBox.innerHTML += "<div style='display:flex;justify-content:space-between;border-bottom:1px solid rgba(127,147,184,.15);padding:.5rem 0;'>" +
-        "<span>" + r.mavzu + "</span><span style='color:var(--dim);font-size:.82rem;'>" + r.sana + "</span></div>";
+        "<span>" + l.dars + "</span><span style='color:var(--dim);font-size:.82rem;'>" + l.chorak + "</span></div>";
     });
-  } catch (error) {
-    showFatalError("Mavzularni yuklashda xato: " + error.code + " — " + error.message);
-  }
+  }, function (error) {
+    showFatalError("Joriy mavzuni yuklashda xato: " + error.code + " — " + error.message);
+  });
 }
 
 /* ---------- PROFIL: RASM YUKLASH ---------- */
@@ -226,23 +221,50 @@ async function loadRating() {
   }
 }
 
-/* ---------- AI YORDAMCHI ---------- */
+/* ---------- AI YORDAMCHI (kengaytirilgan) ---------- */
+const AI_GREETINGS = ["salom", "assalomu alaykum", "hi", "hello", "hey", "yaxshimisiz"];
+const AI_THANKS = ["rahmat", "tashakkur", "raxmat"];
+
 const AI_KNOWLEDGE = [
-  { keys: ["python", "python nima"], answer: "Python — o'qish va yozish oson bo'lgan, keng qo'llaniladigan dasturlash tili. U veb-dasturlash, ma'lumotlar tahlili va sun'iy intellektda ishlatiladi." },
+  { keys: ["python nima", "python"], answer: "Python — o'qish va yozish oson bo'lgan, keng qo'llaniladigan dasturlash tili. U veb-dasturlash, ma'lumotlar tahlili va sun'iy intellektda ishlatiladi." },
   { keys: ["html", "css"], answer: "HTML veb-sahifaning tuzilmasini (matn, rasm, tugmalar), CSS esa uning ko'rinishini (rang, shrift, joylashuv) belgilaydi." },
-  { keys: ["ai", "sun'iy intellekt", "sunʼiy intellekt"], answer: "Sun'iy intellekt (AI) — katta hajmdagi ma'lumotlardan naqshlarni o'rganib, bashorat qiladigan yoki qaror qabul qiladigan dasturlar majmuasi." },
+  { keys: ["sun'iy intellekt", "sunʼiy intellekt", " ai ", "ai nima"], answer: "Sun'iy intellekt (AI) — katta hajmdagi ma'lumotlardan naqshlarni o'rganib, bashorat qiladigan yoki qaror qabul qiladigan dasturlar majmuasi." },
   { keys: ["kiberxavfsizlik", "parol", "fishing"], answer: "Kiberxavfsizlik — ma'lumotlaringizni himoya qilish san'ati. Kuchli parol ishlating, noma'lum havolalarni bosmang va 2FA (ikki bosqichli tasdiqlash)ni yoqing." },
   { keys: ["algoritm"], answer: "Algoritm — biror muammoni yechish uchun aniq va tartiblangan qadamlar ketma-ketligi." },
   { keys: ["oop", "klass", "obyekt"], answer: "OOP (obyektga yo'naltirilgan dasturlash)da klass — qolip, obyekt esa shu qolipdan yasalgan aniq narsa." },
   { keys: ["api"], answer: "API — ikki dastur o'rtasida ma'lumot almashish uchun ishlatiladigan interfeys." },
-  { keys: ["reyting", "ball"], answer: "Reyting bo'limidan o'z ballingiz va sinfdagi o'rningizni ko'rishingiz mumkin. Admin loyihalar va nazorat ishlari uchun ball qo'shadi." }
+  { keys: ["reyting", "ball"], answer: "Reyting bo'limidan o'z ballingiz va sinfdagi o'rningizni ko'rishingiz mumkin. Admin loyihalar va nazorat ishlari uchun ball qo'shadi." },
+  { keys: ["git", "github"], answer: "Git — kod o'zgarishlarini kuzatib boruvchi vosita. GitHub esa loyihangizni internetga joylab, boshqalar bilan bo'lishish imkonini beradi." },
+  { keys: ["sql", "ma'lumotlar bazasi"], answer: "SQL — ma'lumotlar bazasida ma'lumot qidirish, qo'shish va o'zgartirish uchun ishlatiladigan til." }
 ];
 
 function findAiAnswer(text) {
-  const lower = text.toLowerCase();
+  const lower = " " + text.toLowerCase() + " ";
+
+  if (AI_GREETINGS.some(function (g) { return lower.indexOf(g) !== -1; })) {
+    return "Salom, " + (myData ? myData.ism : "do'stim") + "! Sizga qanday yordam bera olaman?";
+  }
+  if (AI_THANKS.some(function (g) { return lower.indexOf(g) !== -1; })) {
+    return "Arzimaydi! Yana savol bo'lsa, bemalol so'rayvering.";
+  }
+
   for (const item of AI_KNOWLEDGE) {
     if (item.keys.some(function (k) { return lower.indexOf(k) !== -1; })) return item.answer;
   }
+
+  // Ish rejadagi darslar orasidan mos keluvchi mavzuni qidiramiz
+  if (myData) {
+    const flat = flattenGrade(myData.sinf);
+    const words = text.toLowerCase().split(/\s+/).filter(function (w) { return w.length > 3; });
+    const found = flat.find(function (l) {
+      const darsLower = l.dars.toLowerCase();
+      return words.some(function (w) { return darsLower.indexOf(w) !== -1; });
+    });
+    if (found) {
+      return "Bu \"" + found.chorak + "\" mavzusiga tegishli bo'lishi mumkin: \"" + found.dars + "\". To'liq tushuntirishni to'garak rahbaridan so'rang.";
+    }
+  }
+
   return "Bu haqida aniq ma'lumotim yo'q. Iltimos, savolingizni boshqacharoq shaklda yozib ko'ring yoki to'garak rahbaridan so'rang.";
 }
 
