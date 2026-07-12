@@ -19,7 +19,6 @@
   </div>
   <a class="kt-side-link active" data-view="overview">📊 Bosh sahifa</a>
   <a class="kt-side-link" data-view="addStudent">➕ O'quvchi qo'shish</a>
-  <!-- ADMIN QO'SHISH HAVOLASI INTEGRATSIYA QILINDI -->
   <a class="kt-side-link" data-view="addAdmin">⚙️ Admin qo'shish</a>
   <a class="kt-side-link" data-view="students">🏆 O'quvchilar / Reyting</a>
   <a class="kt-side-link" data-view="ishreja">📅 Ish reja</a>
@@ -46,7 +45,7 @@
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
       <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statTotal">0</p><p class="kt-stat-label">Jami o'quvchi</p></div>
       <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statOnline">0</p><p class="kt-stat-label">Hozir onlayn</p></div>
-      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statTopics">0</p><p class="kt-stat-label">Yuklangan mavzular</p></div>
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statTopics">0</p><p class="kt-stat-label">Belgilangan mavzular</p></div>
       <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statAvgBall">0</p><p class="kt-stat-label">O'rtacha ball</p></div>
     </div>
     <div class="kt-dash-card">
@@ -75,22 +74,25 @@
           <button type="submit" class="kt-btn-primary" id="addStudentBtn">O'quvchi qo'shish</button>
         </div>
       </form>
+      <p id="addStudentMsg" class="mt-4"></p>
     </div>
   </section>
 
-  <!-- YANGI ADMIN QO'SHISH (JS LOGIKANGIZ UCHUN TO'LIQ INTEGRATSIYA) -->
+  <!-- YANGI ADMIN QO'SHISH -->
   <section class="kt-view" data-view-panel="addAdmin">
     <div class="kt-dash-card">
       <h3>Yangi admin qo'shish</h3>
+      <p style="color:var(--dim);font-size:.85rem;margin-bottom:1rem;">Diqqat: yangi admin butun tizimni (barcha o'quvchilar, ball, mavzular) boshqara oladi. Faqat ishonchli odamga bering.</p>
       <form id="addAdminForm" class="kt-form-grid">
         <div><label class="kt-field-label">Ism</label><input id="adminIsm" class="kt-login-input" required></div>
         <div><label class="kt-field-label">Familiya</label><input id="adminFamiliya" class="kt-login-input" required></div>
         <div><label class="kt-field-label">Admin ID (login uchun)</label><input id="adminId" class="kt-login-input" required></div>
         <div><label class="kt-field-label">Parol</label><input id="adminParol" class="kt-login-input" required></div>
         <div class="sm:col-span-2 lg:col-span-2">
-          <button type="submit" class="kt-btn-primary" id="addAdminBtn" style="border-color:var(--accent); color:var(--accent);">Admin qo'shish</button>
+          <button type="submit" class="kt-btn-primary" id="addAdminBtn">Admin qo'shish</button>
         </div>
       </form>
+      <p id="addAdminMsg" class="mt-4"></p>
     </div>
   </section>
 
@@ -117,9 +119,40 @@
   <!-- ISH REJA BO'LIMI -->
   <section class="kt-view" data-view-panel="ishreja">
     <div class="kt-dash-card">
+      <h3>Sinf uchun hozirgi darsni belgilash</h3>
+      <p style="color:var(--dim);font-size:.85rem;margin-bottom:1rem;">Bu yerda tanlangan dars o'quvchi panelida "Joriy mavzu" sifatida darhol ko'rinadi.</p>
+      <form id="currentLessonForm" class="kt-form-grid">
+        <div><label class="kt-field-label">Sinf</label>
+          <select id="clSinf" class="kt-select" required>
+            <option value="5">5-sinf</option><option value="6">6-sinf</option>
+            <option value="7">7-sinf</option><option value="8">8-sinf</option>
+          </select>
+        </div>
+        <div><label class="kt-field-label">Chorak</label>
+          <select id="clChorak" class="kt-select" required></select>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-1"><label class="kt-field-label">Dars</label>
+          <select id="clDars" class="kt-select" required></select>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-3">
+          <button type="submit" class="kt-btn-primary">Shu darsni "hozirgi" deb belgilash</button>
+        </div>
+      </form>
+      <p id="currentLessonMsg" class="mt-4"></p>
+    </div>
+    <div class="kt-dash-card">
+      <h3>Har bir sinfning hozirgi holati</h3>
+      <div style="overflow-x:auto;">
+        <table class="kt-table">
+          <thead><tr><th>Sinf</th><th>Chorak</th><th>Hozirgi dars</th><th>Yangilangan</th></tr></thead>
+          <tbody id="currentLessonTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="kt-dash-card">
       <h3 style="margin:0 0 10px 0; color:#00ff88;">📅 To'garak Yillik Ish Rejalari</h3>
       <p style="color:var(--dim); font-size:0.9rem; margin-bottom:20px;">Tasdiqlangan kalendar ish rejalar ro'yxati. Ko'rish tugmasini bossangiz, PDF hujjat ochiladi:</p>
-      
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
           <h4 style="margin:0 0 10px 0; color:#fff;">📅 5-Sinf Ish Rejasi</h4>
@@ -146,7 +179,6 @@
     <div class="kt-dash-card">
       <h3 style="color:#ff4a76; margin:0 0 10px 0;">🏆 Nazorat Ishlari va Javoblar</h3>
       <p style="color:var(--dim); font-size:0.9rem; margin-bottom:20px;">Sinf monitoringi uchun choraklik nazorat ishi savollari hamda rasmiy to'g'ri javoblar kalitlari:</p>
-      
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
           <h4 style="margin:0 0 10px 0; color:#fff;">🏆 5-Sinf Nazorat ishi javoblari</h4>
@@ -171,7 +203,7 @@
   <!-- NIZOM VA HUQUQLAR BO'LIMI -->
   <section class="kt-view" data-view-panel="nizom_huquq">
     <div class="kt-dash-card">
-      <h3 style="color: var(--accent, #00e5ff); margin-bottom: 20px;">📜 To'garak Nizomlari va Huquqiy Hujjatlar</h3>
+      <h3 style="color: var(--cyan); margin-bottom: 20px;">📜 To'garak Nizomlari va Huquqiy Hujjatlar</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
           <h4 style="margin:0 0 10px 0; color:#fff;">📝 To'garak a'zolik arizasi</h4>
@@ -212,6 +244,6 @@
 </main>
 
 <div id="toastContainer" class="kt-toast-container"></div>
-<script type="module" src="admin.js?v=1.0.1"></script>
+<script type="module" src="admin.js"></script>
 </body>
 </html>
