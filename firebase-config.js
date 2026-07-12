@@ -2,17 +2,19 @@
 // FIREBASE ALL-IN-ONE CONFIG (GITHUB PAGES UCHUN ENG TOZA VARIANT)
 // ==========================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-  getAuth, 
+import {
+  getAuth,
   signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  updatePassword
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { 
-  getFirestore, 
-  doc, 
+import {
+  getFirestore,
+  doc,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -24,10 +26,15 @@ import {
   serverTimestamp,
   increment
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const firebaseConfig = {
-  // ⚠️ SHU YERGA FIREBASE KONSOLIDAN OLINGAN TO'G'RI WEB API KEYINGIZNI QO'YING:
-  apiKey: "AIzaSyBg1rqBJtTlsapTrws-j-laa0dqUzB_y-4", 
+  apiKey: "AIzaSyBg1rqBJtTlsapTrws-j-laa0dqUzB_y-4",
   authDomain: "kelajak-texnalogiyalari.firebaseapp.com",
   projectId: "kelajak-texnalogiyalari",
   storageBucket: "kelajak-texnalogiyalari.appspot.com",
@@ -39,6 +46,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Ikkinchi auth (O'quvchi qo'shganda admin sessiyasi o'chmasligi uchun)
 const secondaryApp = initializeApp(firebaseConfig, "Secondary");
@@ -46,15 +54,16 @@ const secondaryAuth = getAuth(secondaryApp);
 
 // ID-ni email formatiga o'tkazuvchi yordamchi funksiya
 function idToEmail(id) {
-  if (id.includes("@")) return id; 
-  return `${id}@kt-portal.local`; 
+  if (id.includes("@")) return id;
+  return `${id}@kt-portal.local`;
 }
 
-// FIREBASE-CONFIG.JS ENGI PASTKI QISMI:
-export { 
-  auth, db, secondaryAuth, idToEmail,
+// FIREBASE-CONFIG.JS NING PASTKI QISMI — barcha eksportlar:
+export {
+  auth, db, storage, secondaryAuth, idToEmail,
   onAuthStateChanged, signOut, createUserWithEmailAndPassword,
-  signInWithEmailAndPassword, // <-- MANA SHU QATORNI QO'SHISH SHART!
-  doc, setDoc, getDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, onSnapshot, serverTimestamp, increment
+  signInWithEmailAndPassword, updatePassword,
+  doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
+  collection, query, where, orderBy, onSnapshot, serverTimestamp, increment,
+  ref, uploadBytes, getDownloadURL
 };
