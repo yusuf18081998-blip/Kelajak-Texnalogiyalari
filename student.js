@@ -20,7 +20,19 @@ function showToast(message, type) {
     toast.style.opacity = "0";
     toast.style.transform = "translateX(40px)";
     setTimeout(function () { toast.remove(); }, 400);
-  }, 3800);
+  }, 5000);
+}
+
+// Yuklanish holatini to'xtatib, xatoni EKRANDA ko'rsatuvchi funksiya
+function showFatalError(msg) {
+  console.error(msg);
+  const titleEl = document.getElementById("todayTopicTitle");
+  const metaEl = document.getElementById("todayTopicMeta");
+  const nameEl = document.getElementById("stuNameLabel");
+  if (titleEl) titleEl.textContent = "Xatolik yuz berdi";
+  if (metaEl) metaEl.textContent = msg;
+  if (nameEl) nameEl.textContent = "Xato";
+  showToast(msg, "error");
 }
 
 let myUid = null;
@@ -28,11 +40,14 @@ let myData = null;
 
 /* ---------- AUTH GUARD + INIT ---------- */
 onAuthStateChanged(auth, async function (user) {
-  if (!user) { window.location.href = "../index.html"; return; }
+  if (!user) { window.location.href = "index.html"; return; }
   myUid = user.uid;
   try {
     const userDoc = await getDoc(doc(db, "users", myUid));
-    if (!userDoc.exists()) { window.location.href = "../index.html"; return; }
+    if (!userDoc.exists()) {
+      showFatalError("Bu foydalanuvchi uchun Firestore'da 'users' hujjati topilmadi. Admin orqali qayta qo'shib ko'ring.");
+      return;
+    }
     myData = userDoc.data();
     if (myData.role === "admin") { window.location.href = "admin.html"; return; }
 
@@ -48,12 +63,12 @@ onAuthStateChanged(auth, async function (user) {
     heartbeat("Bugungi mavzu");
     setInterval(function () { heartbeat(currentSectionName); }, 30000);
   } catch (error) {
-    console.error("Foydalanuvchi ma'lumotlarini yuklashda xato:", error);
+    showFatalError("Ma'lumot yuklashda xato: " + error.code + " — " + error.message);
   }
 });
 
 document.getElementById("logoutBtn").addEventListener("click", function () {
-  signOut(auth).then(function () { window.location.href = "../index.html"; });
+  signOut(auth).then(function () { window.location.href = "index.html"; });
 });
 
 function defaultAvatar() {
@@ -68,7 +83,7 @@ async function heartbeat(sectionName) {
   if (!myUid) return;
   try {
     await updateDoc(doc(db, "users", myUid), { oxirgiBolim: sectionName, oxirgiVaqt: serverTimestamp() });
-  } catch (err) { /* jim turadi */ }
+  } catch (err) { /* jim turadi — faoliyat yozib bo'lmasa ham sahifa ishlashda davom etadi */ }
 }
 
 /* ---------- SIDEBAR NAVIGATSIYA ---------- */
@@ -104,14 +119,12 @@ function todayStr() {
 async function loadTodayTopic() {
   try {
     document.getElementById("todayDate").textContent = new Date().toLocaleDateString("uz-UZ", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-    
-    // Indeks xatosini oldini olish uchun faqat sinf bo'yicha qidiramiz
+
     const q = query(collection(db, "ishreja"), where("sinf", "==", myData.sinf));
     const snap = await getDocs(q);
     const all = [];
     snap.forEach(function (d) { all.push(d.data()); });
 
-    // Sanalarni JS-ning o'zida kamayish tartibida sarflaymiz (Eng yangisi tepada)
     all.sort(function (a, b) {
       return (b.sana || "").localeCompare(a.sana || "");
     });
@@ -132,7 +145,7 @@ async function loadTodayTopic() {
         "<span>" + r.mavzu + "</span><span style='color:var(--dim);font-size:.82rem;'>" + r.sana + "</span></div>";
     });
   } catch (error) {
-    console.error("Mavzularni yuklashda xato:", error);
+    showFatalError("Mavzularni yuklashda xato: " + error.code + " — " + error.message);
   }
 }
 
@@ -205,9 +218,11 @@ async function loadRating() {
           "<td>" + s.ism + " " + s.familiya + (isMe ? " (siz)" : "") + "</td>" +
           "<td>" + (s.ball || 0) + "</td></tr>";
       });
+    }, function (error) {
+      showToast("Reytingni jonli kuzatishda xato: " + error.message, "error");
     });
   } catch (error) {
-    console.error("Reytingni yuklashda xato:", error);
+    showToast("Reytingni yuklashda xato: " + error.message, "error");
   }
 }
 
@@ -218,7 +233,7 @@ const AI_KNOWLEDGE = [
   { keys: ["ai", "sun'iy intellekt", "sunʼiy intellekt"], answer: "Sun'iy intellekt (AI) — katta hajmdagi ma'lumotlardan naqshlarni o'rganib, bashorat qiladigan yoki qaror qabul qiladigan dasturlar majmuasi." },
   { keys: ["kiberxavfsizlik", "parol", "fishing"], answer: "Kiberxavfsizlik — ma'lumotlaringizni himoya qilish san'ati. Kuchli parol ishlating, noma'lum havolalarni bosmang va 2FA (ikki bosqichli tasdiqlash)ni yoqing." },
   { keys: ["algoritm"], answer: "Algoritm — biror muammoni yechish uchun aniq va tartiblangan qadamlar ketma-ketligi." },
-  { keys: ["oop", "klass", "obyekt"], answer: "OOP (obyektga yo'naltirilgan dasturlash)da klass — qolip, obyekt esa shu qolipdan yasalgan aniq naska." },
+  { keys: ["oop", "klass", "obyekt"], answer: "OOP (obyektga yo'naltirilgan dasturlash)da klass — qolip, obyekt esa shu qolipdan yasalgan aniq narsa." },
   { keys: ["api"], answer: "API — ikki dastur o'rtasida ma'lumot almashish uchun ishlatiladigan interfeys." },
   { keys: ["reyting", "ball"], answer: "Reyting bo'limidan o'z ballingiz va sinfdagi o'rningizni ko'rishingiz mumkin. Admin loyihalar va nazorat ishlari uchun ball qo'shadi." }
 ];
