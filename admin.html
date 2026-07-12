@@ -19,6 +19,8 @@
   </div>
   <a class="kt-side-link active" data-view="overview">📊 Bosh sahifa</a>
   <a class="kt-side-link" data-view="addStudent">➕ O'quvchi qo'shish</a>
+  <!-- ADMIN QO'SHISH HAVOLASI INTEGRATSIYA QILINDI -->
+  <a class="kt-side-link" data-view="addAdmin">⚙️ Admin qo'shish</a>
   <a class="kt-side-link" data-view="students">🏆 O'quvchilar / Reyting</a>
   <a class="kt-side-link" data-view="ishreja">📅 Ish reja</a>
   <a class="kt-side-link" data-view="nazorat_ishi">🏆 Nazorat ishi</a>
@@ -71,6 +73,22 @@
         <div><label class="kt-field-label">Parol</label><input id="stuParol" class="kt-login-input" required></div>
         <div class="sm:col-span-2 lg:col-span-3">
           <button type="submit" class="kt-btn-primary" id="addStudentBtn">O'quvchi qo'shish</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- YANGI ADMIN QO'SHISH (JS LOGIKANGIZ UCHUN TO'LIQ INTEGRATSIYA) -->
+  <section class="kt-view" data-view-panel="addAdmin">
+    <div class="kt-dash-card">
+      <h3>Yangi admin qo'shish</h3>
+      <form id="addAdminForm" class="kt-form-grid">
+        <div><label class="kt-field-label">Ism</label><input id="adminIsm" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Familiya</label><input id="adminFamiliya" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Admin ID (login uchun)</label><input id="adminId" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Parol</label><input id="adminParol" class="kt-login-input" required></div>
+        <div class="sm:col-span-2 lg:col-span-2">
+          <button type="submit" class="kt-btn-primary" id="addAdminBtn" style="border-color:var(--accent); color:var(--accent);">Admin qo'shish</button>
         </div>
       </form>
     </div>
