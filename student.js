@@ -6,7 +6,7 @@ import {
   onAuthStateChanged, signOut, updatePassword,
   doc, getDoc, updateDoc, collection, query, where, onSnapshot, serverTimestamp, getDocs,
   ref, uploadBytes, getDownloadURL
-} from "./firebase-init.js";
+} from "./firebase-config.js";
 
 function showToast(message, type) {
   const container = document.getElementById("toastContainer");
