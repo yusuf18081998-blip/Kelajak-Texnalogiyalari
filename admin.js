@@ -1,344 +1,199 @@
-// ==========================================================================
-// ADMIN PANEL LOGIKASI
-// ==========================================================================
-import {
-  auth, db, secondaryAuth, idToEmail,
-  onAuthStateChanged, signOut, createUserWithEmailAndPassword, signOut as secSignOut,
-  doc, setDoc, getDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, onSnapshot, serverTimestamp, increment
-} from "./firebase-config.js"; 
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Kelajak Texnologiyalari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="utilities.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body class="kt-body kt-dash-body">
 
-/* ---------- TOAST ---------- */
-function showToast(message, type) {
-  const container = document.getElementById("toastContainer");
-  if (!container) return;
-  const toast = document.createElement("div");
-  toast.className = "kt-toast" + (type === "error" ? " error" : "");
-  toast.innerHTML = "<strong>" + (type === "error" ? "Xato: " : "Bajarildi: ") + "</strong>" + message;
-  container.appendChild(toast);
-  setTimeout(function () {
-    toast.style.transition = "opacity .4s, transform .4s";
-    toast.style.opacity = "0";
-    toast.style.transform = "translateX(40px)";
-    setTimeout(function () { toast.remove(); }, 400);
-  }, 3800);
-}
+<aside class="kt-sidebar" id="sidebar">
+  <div class="kt-sidebar-brand">
+    <img src="KT_Logo.png" class="w-10 h-10 rounded-full kt-logo-img" alt="Logo">
+    <span>ADMIN PANEL</span>
+  </div>
+  <a class="kt-side-link active" data-view="overview">📊 Bosh sahifa</a>
+  <a class="kt-side-link" data-view="addStudent">➕ O'quvchi qo'shish</a>
+  <a class="kt-side-link" data-view="students">🏆 O'quvchilar / Reyting</a>
+  <a class="kt-side-link" data-view="ishreja">📅 Ish reja</a>
+  <a class="kt-side-link" data-view="nazorat_ishi">🏆 Nazorat ishi</a>
+  <a class="kt-side-link" data-view="nizom_huquq">📜 Nizom va huquq</a>
+  <a class="kt-side-link" data-view="activity">🟢 Faoliyat monitoring</a>
+  <div class="kt-side-foot">
+    <p id="adminNameLabel" style="color:var(--dim);font-size:.8rem;margin-bottom:.7rem;">Yuklanmoqda...</p>
+    <button id="logoutBtn" class="kt-logout-btn">Chiqish</button>
+  </div>
+</aside>
 
-/* ---------- AUTH GUARD ---------- */
-let currentStudents = [];
-let currentIshReja = [];
+<main class="kt-main">
+  <div class="kt-main-top">
+    <div>
+      <p class="kt-eyebrow">ADMIN</p>
+      <h1 class="kt-h2">Boshqaruv paneli</h1>
+    </div>
+    <button id="mobileSidebarBtn" class="kt-profile-icon md:hidden">☰</button>
+  </div>
 
-onAuthStateChanged(auth, async function (user) {
-  if (!user) { window.location.href = "../index.html"; return; }
-  const userDoc = await getDoc(doc(db, "users", user.uid));
-  if (!userDoc.exists() || userDoc.data().role !== "admin") {
-    showToast("Sizda admin huquqi yo'q.", "error");
-    setTimeout(function () { window.location.href = "../index.html"; }, 1500);
-    return;
-  }
-  
-  // Undefined xatosini oldini olish uchun tekshiruv bilan yozamiz
-  const ism = userDoc.data().ism || "Admin";
-  const familiya = userDoc.data().familiya || "";
-  document.getElementById("adminNameLabel").textContent = ism + " " + familiya;
-  
-  initStudentsListener();
-  initIshRejaListener();
-});
+  <!-- BOSH SAHIFA -->
+  <section class="kt-view active" data-view-panel="overview">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statTotal">0</p><p class="kt-stat-label">Jami o'quvchi</p></div>
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statOnline">0</p><p class="kt-stat-label">Hozir onlayn</p></div>
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statTopics">0</p><p class="kt-stat-label">Yuklangan mavzular</p></div>
+      <div class="kt-dash-card text-center"><p class="kt-stat-num" id="statAvgBall">0</p><p class="kt-stat-label">O'rtacha ball</p></div>
+    </div>
+    <div class="kt-dash-card">
+      <h3>Sinflar bo'yicha taqsimot</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="gradeDistribution"></div>
+    </div>
+  </section>
 
-document.getElementById("logoutBtn").addEventListener("click", function () {
-  signOut(auth).then(function () { window.location.href = "../index.html"; });
-});
+  <!-- O'QUVCHI QO'SHISH -->
+  <section class="kt-view" data-view-panel="addStudent">
+    <div class="kt-dash-card">
+      <h3>Yangi o'quvchi qo'shish</h3>
+      <form id="addStudentForm" class="kt-form-grid">
+        <div><label class="kt-field-label">Ism</label><input id="stuIsm" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Familiya</label><input id="stuFamiliya" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Sinf</label>
+          <select id="stuSinf" class="kt-select" required>
+            <option value="5">5-sinf</option><option value="6">6-sinf</option>
+            <option value="7">7-sinf</option><option value="8">8-sinf</option>
+          </select>
+        </div>
+        <div><label class="kt-field-label">Guruh (ixtiyoriy)</label><input id="stuGuruh" class="kt-login-input"></div>
+        <div><label class="kt-field-label">ID (login uchun)</label><input id="stuId" class="kt-login-input" required></div>
+        <div><label class="kt-field-label">Parol</label><input id="stuParol" class="kt-login-input" required></div>
+        <div class="sm:col-span-2 lg:col-span-3">
+          <button type="submit" class="kt-btn-primary" id="addStudentBtn">O'quvchi qo'shish</button>
+        </div>
+      </form>
+    </div>
+  </section>
 
-/* ---------- SIDEBAR NAVIGATSIYA ---------- */
-const sideLinks = Array.from(document.querySelectorAll(".kt-side-link"));
-sideLinks.forEach(function (link) {
-  link.addEventListener("click", function () {
-    sideLinks.forEach(function (l) { l.classList.remove("active"); });
-    link.classList.add("active");
-    document.querySelectorAll(".kt-view").forEach(function (v) {
-      v.classList.toggle("active", v.dataset.viewPanel === link.dataset.view);
-    });
-    document.getElementById("sidebar").classList.remove("open");
-  });
-});
+  <!-- O'QUVCHILAR / REYTING -->
+  <section class="kt-view" data-view-panel="students">
+    <div class="kt-dash-card">
+      <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+        <h3 style="margin:0;">O'quvchilar ro'yxati va reyting</h3>
+        <select id="studentsGradeFilter" class="kt-select" style="max-width:160px;">
+          <option value="all">Barcha sinflar</option>
+          <option value="5">5-sinf</option><option value="6">6-sinf</option>
+          <option value="7">7-sinf</option><option value="8">8-sinf</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="kt-table">
+          <thead><tr><th>#</th><th>Ism familiya</th><th>Sinf</th><th>ID</th><th>Ball</th><th>Amal</th></tr></thead>
+          <tbody id="studentsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-const mobileBtn = document.getElementById("mobileSidebarBtn");
-if (mobileBtn) {
-  mobileBtn.addEventListener("click", function () {
-    document.getElementById("sidebar").classList.toggle("open");
-  });
-}
-
-/* ---------- O'QUVCHI QO'SHISH (TO'G'RILANDI & QOTMAYDI) ---------- */
-const addStudentForm = document.getElementById("addStudentForm");
-if (addStudentForm) {
-  addStudentForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    
-    const ism = document.getElementById("stuIsm").value.trim();
-    const familiya = document.getElementById("stuFamiliya").value.trim();
-    const sinf = document.getElementById("stuSinf").value;
-    const guruh = document.getElementById("stuGuruh").value.trim();
-    const id = document.getElementById("stuId").value.trim().toLowerCase();
-    const parol = document.getElementById("stuParol").value;
-    const btn = document.getElementById("addStudentBtn");
-
-    if (parol.length < 6) {
-      showToast("Parol kamida 6 ta belgidan iborat bo'lishi kerak.", "error");
-      return;
-    }
-
-    // Tugmani qulflash
-    btn.disabled = true;
-    btn.textContent = "Qo'shilmoqda...";
-
-    try {
-      const email = idToEmail(id);
+  <!-- ISH REJA BO'LIMI -->
+  <section class="kt-view" data-view-panel="ishreja">
+    <div class="kt-dash-card">
+      <h3 style="margin:0 0 10px 0; color:#00ff88;">📅 To'garak Yillik Ish Rejalari</h3>
+      <p style="color:var(--dim); font-size:0.9rem; margin-bottom:20px;">Tasdiqlangan kalendar ish rejalar ro'yxati. Ko'rish tugmasini bossangiz, PDF hujjat ochiladi:</p>
       
-      // Secondary auth orqali yangi o'quvchi profilini ochish
-      const cred = await createUserWithEmailAndPassword(secondaryAuth, email, parol);
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📅 5-Sinf Ish Rejasi</h4>
+          <a href="KT_5sinf_Ish_Reja.pdf" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📅 6-Sinf Ish Rejasi</h4>
+          <a href="KT_6sinf_Ish_Reja.pdf" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📅 7-Sinf Ish Rejasi</h4>
+          <a href="KT_7sinf_Ish_Reja.pdf" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(0,255,136,0.03); padding:20px; border-radius:8px; border:1px solid rgba(0,255,136,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📅 8-Sinf Ish Rejasi</h4>
+          <a href="KT_8sinf_Ish_Reja.pdf" target="_blank" class="kt-btn-primary" style="background:#00ff88; color:#000; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NAZORAT ISHLARI BO'LIMI -->
+  <section class="kt-view" data-view-panel="nazorat_ishi">
+    <div class="kt-dash-card">
+      <h3 style="color:#ff4a76; margin:0 0 10px 0;">🏆 Nazorat Ishlari va Javoblar</h3>
+      <p style="color:var(--dim); font-size:0.9rem; margin-bottom:20px;">Sinf monitoringi uchun choraklik nazorat ishi savollari hamda rasmiy to'g'ri javoblar kalitlari:</p>
       
-      // Firestore bazasiga yozish (Bu yerda qoidalar ochiq bo'lishi kerak)
-      await setDoc(doc(db, "users", cred.user.uid), {
-        ism: ism, 
-        familiya: familiya, 
-        sinf: sinf, 
-        guruh: guruh || "",
-        loginId: id, 
-        role: "student", 
-        ball: 0, 
-        rasmUrl: "",
-        oxirgiBolim: "—", 
-        oxirgiVaqt: serverTimestamp(), 
-        yaratilgan: serverTimestamp()
-      });
-      
-      // Ikkinchi seansni tozalash
-      await secSignOut(secondaryAuth);
-      
-      showToast(ism + " " + familiya + " muvaffaqiyatli qo'shildi! ID: " + id, "success");
-      addStudentForm.reset();
-      
-    } catch (err) {
-      console.error("O'quvchi qo'shishda xato:", err);
-      
-      if (err.code === "auth/email-already-in-use") {
-        showToast("Bu ID allaqachon band! Boshqa ID kiriting.", "error");
-      } else if (err.code === "permission-denied") {
-        showToast("Firebase bazasiga yozish taqiqlandi! Rules'ni oching.", "error");
-      } else {
-        showToast("Xatolik: " + err.message, "error");
-      }
-    } finally {
-      // Qanday vaziyat bo'lsa ham tugma endi qulflanib qolmaydi!
-      btn.disabled = false;
-      btn.textContent = "O'quvchi qo'shish";
-    }
-  });
-}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🏆 5-Sinf Nazorat ishi javoblari</h4>
+          <a href="KT_5sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🏆 6-Sinf Nazorat ishi javoblari</h4>
+          <a href="KT_6sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🏆 7-Sinf Nazorat ishi javoblari</h4>
+          <a href="KT_7sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,74,118,0.03); padding:20px; border-radius:8px; border:1px solid rgba(255,74,118,0.1);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🏆 8-Sinf Nazorat ishi javoblari</h4>
+          <a href="KT_8sinf_Nazorat_Ishlari_Javoblari.pdf" target="_blank" class="kt-btn-primary" style="background:#ff4a76; color:#fff; text-decoration:none; display:inline-block; font-weight:bold; padding:6px 14px; font-size:0.85rem;">👁️ Ko'rish</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-/* ---------- O'QUVCHILAR RO'YXATI / REYTING / STATISTIKA ---------- */
-function initStudentsListener() {
-  const q = query(collection(db, "users"), where("role", "==", "student"));
-  onSnapshot(q, function (snap) {
-    currentStudents = [];
-    snap.forEach(function (d) { currentStudents.push(Object.assign({ uid: d.id }, d.data())); });
-    currentStudents.sort(function (a, b) { return (b.ball || 0) - (a.ball || 0); });
-    renderStudentsTable();
-    renderActivityTable();
-    renderOverview();
-  });
-}
+  <!-- NIZOM VA HUQUQLAR BO'LIMI -->
+  <section class="kt-view" data-view-panel="nizom_huquq">
+    <div class="kt-dash-card">
+      <h3 style="color: var(--accent, #00e5ff); margin-bottom: 20px;">📜 To'garak Nizomlari va Huquqiy Hujjatlar</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📝 To'garak a'zolik arizasi</h4>
+          <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">O'quvchilarni to'garakka qabul qilishda ota-onalardan olinadigan rasmiy ariza shakli.</p>
+          <a href="KT_Ariza.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">📘 To'garak ichki dars nizomlari</h4>
+          <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">Kelajak Texnologiyalari klubining yillik tasdiqlangan ichki intizom va tartib qoidalari.</p>
+          <a href="KT_Dars_Nizomlari.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">⚖️ O'quvchilar majburiyatlari va huquqlari</h4>
+          <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">To'garak jarayonida o'quvchi hamda ustozning huquqlari va texnika xavfsizligi daftari.</p>
+          <a href="KT_Huquqlar_Daftari.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">👁️ Ko'rish</a>
+        </div>
+        <div style="background:rgba(255,255,255,0.02); padding:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+          <h4 style="margin:0 0 10px 0; color:#fff;">🎖️ To'garak tashkil etilganligi haqida tasdiqnoma</h4>
+          <p style="font-size:0.85rem; color:var(--dim); margin-bottom:15px;">Maktab ma'muriyati tomonidan to'garak faoliyatini yuritishga berilgan ruxsatnoma guvohnomasi.</p>
+          <a href="KT_Tasdiqnoma.pdf" target="_blank" style="color:#00e5ff; font-weight:bold; text-decoration:none;">👁️ Ko'rish</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-function renderOverview() {
-  const statTotal = document.getElementById("statTotal");
-  const statOnline = document.getElementById("statOnline");
-  const statTopics = document.getElementById("statTopics");
-  const statAvgBall = document.getElementById("statAvgBall");
+  <!-- FAOLIYAT MONITORING -->
+  <section class="kt-view" data-view-panel="activity">
+    <div class="kt-dash-card">
+      <h3>O'quvchilar faoliyati (jonli)</h3>
+      <div style="overflow-x:auto;">
+        <table class="kt-table">
+          <thead><tr><th>Holat</th><th>Ism familiya</th><th>Sinf</th><th>Hozir qayerda</th><th>So'nggi faollik</th></tr></thead>
+          <tbody id="activityTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
 
-  if (statTotal) statTotal.textContent = currentStudents.length;
-  
-  const now = Date.now();
-  const online = currentStudents.filter(function (s) {
-    return s.oxirgiVaqt && s.oxirgiVaqt.toMillis && (now - s.oxirgiVaqt.toMillis()) < 90000;
-  }).length;
-  if (statOnline) statOnline.textContent = online;
-  if (statTopics) statTopics.textContent = currentIshReja.length;
-  
-  const avg = currentStudents.length ? (currentStudents.reduce(function (a, s) { return a + (s.ball || 0); }, 0) / currentStudents.length) : 0;
-  if (statAvgBall) statAvgBall.textContent = avg.toFixed(1);
-
-  const dist = { 5: 0, 6: 0, 7: 0, 8: 0 };
-  currentStudents.forEach(function (s) { if (dist[s.sinf] !== undefined) dist[s.sinf]++; });
-  
-  const box = document.getElementById("gradeDistribution");
-  if (box) {
-    box.innerHTML = "";
-    Object.keys(dist).forEach(function (g) {
-      box.innerHTML += '<div class="kt-stat"><span class="kt-stat-num">' + dist[g] + '</span><span class="kt-stat-label">' + g + '-sinf</span></div>';
-    });
-  }
-}
-
-function renderStudentsTable() {
-  const filterEl = document.getElementById("studentsGradeFilter");
-  const tbody = document.getElementById("studentsTableBody");
-  if (!tbody || !filterEl) return;
-
-  const filter = filterEl.value;
-  tbody.innerHTML = "";
-  currentStudents
-    .filter(function (s) { return filter === "all" || s.sinf === filter; })
-    .forEach(function (s, i) {
-      const rankClass = i === 0 ? "kt-rank-badge kt-rank-1" : "kt-rank-badge";
-      tbody.innerHTML +=
-        "<tr><td><span class='" + rankClass + "'>" + (i + 1) + "</span></td>" +
-        "<td>" + s.ism + " " + s.familiya + "</td>" +
-        "<td>" + s.sinf + "-sinf</td>" +
-        "<td>" + (s.loginId || "—") + "</td>" +
-        "<td>" + (s.ball || 0) + "</td>" +
-        "<td style='display:flex;gap:.4rem;'>" +
-        "<button class='kt-btn-outline' style='padding:.3rem .6rem;' data-ball-up='" + s.uid + "'>+5</button>" +
-        "<button class='kt-btn-outline' style='padding:.3rem .6rem;' data-ball-down='" + s.uid + "'>-5</button>" +
-        "<button class='kt-btn-outline' style='padding:.3rem .6rem;border-color:var(--magenta);color:var(--magenta);' data-del-student='" + s.uid + "'>O'chirish</button>" +
-        "</td></tr>";
-    });
-
-  Array.from(tbody.querySelectorAll("[data-ball-up]")).forEach(function (btn) {
-    btn.addEventListener("click", function () { adjustBall(btn.dataset.ballUp, 5); });
-  });
-  Array.from(tbody.querySelectorAll("[data-ball-down]")).forEach(function (btn) {
-    btn.addEventListener("click", function () { adjustBall(btn.dataset.ballDown, -5); });
-  });
-  Array.from(tbody.querySelectorAll("[data-del-student]")).forEach(function (btn) {
-    btn.addEventListener("click", function () { deleteStudent(btn.dataset.delStudent); });
-  });
-}
-
-async function adjustBall(uid, delta) {
-  try {
-    await updateDoc(doc(db, "users", uid), { ball: increment(delta) });
-    showToast("Ball yangilandi (" + (delta > 0 ? "+" : "") + delta + ").", "success");
-  } catch (err) {
-    showToast("Ball yangilashda xatolik: " + err.message, "error");
-  }
-}
-
-async function deleteStudent(uid) {
-  if (!confirm("Bu o'quvchi ma'lumotlarini o'chirmoqchimisiz? (Login hisobi Firebase Console'dan alohida o'chiriladi)")) return;
-  try {
-    await deleteDoc(doc(db, "users", uid));
-    showToast("O'quvchi ma'lumotlari o'chirildi.", "success");
-  } catch (err) {
-    showToast("O'chirishda xatolik: " + err.message, "error");
-  }
-}
-
-const stuFilter = document.getElementById("studentsGradeFilter");
-if (stuFilter) {
-  stuFilter.addEventListener("change", renderStudentsTable);
-}
-
-/* ---------- ISH REJA YUKLASH ---------- */
-const ishRejaForm = document.getElementById("ishRejaForm");
-if (ishRejaForm) {
-  ishRejaForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const sinf = document.getElementById("irSinf").value;
-    const sana = document.getElementById("irSana").value;
-    const chorak = document.getElementById("irChorak").value;
-    const mavzu = document.getElementById("irMavzu").value.trim();
-    try {
-      await setDoc(doc(collection(db, "ishreja")), {
-        sinf: sinf, sana: sana, chorak: chorak, mavzu: mavzu, yaratilgan: serverTimestamp()
-      });
-      showToast("Mavzu qo'shildi: " + mavzu, "success");
-      ishRejaForm.reset();
-    } catch (err) {
-      showToast("Xatolik: " + err.message, "error");
-    }
-  });
-}
-
-function initIshRejaListener() {
-  const q = query(collection(db, "ishreja"), orderBy("sana", "desc"));
-  onSnapshot(q, function (snap) {
-    currentIshReja = [];
-    snap.forEach(function (d) { currentIshReja.push(Object.assign({ id: d.id }, d.data())); });
-    renderIshRejaTable();
-    renderOverview();
-  });
-}
-
-function renderIshRejaTable() {
-  const filterEl = document.getElementById("ishRejaGradeFilter");
-  const tbody = document.getElementById("ishRejaTableBody");
-  if (!tbody || !filterEl) return;
-
-  const filter = filterEl.value;
-  tbody.innerHTML = "";
-  currentIshReja
-    .filter(function (r) { return filter === "all" || r.sinf === filter; })
-    .forEach(function (r) {
-      tbody.innerHTML +=
-        "<tr><td>" + r.sana + "</td><td>" + r.sinf + "-sinf</td><td>" + r.chorak + "</td><td>" + r.mavzu + "</td>" +
-        "<td><button class='kt-btn-outline' style='padding:.3rem .6rem;border-color:var(--magenta);color:var(--magenta);' data-del-ir='" + r.id + "'>O'chirish</button></td></tr>";
-    });
-  Array.from(tbody.querySelectorAll("[data-del-ir]")).forEach(function (btn) {
-    btn.addEventListener("click", async function () {
-      await deleteDoc(doc(db, "ishreja", btn.dataset.delIr));
-      showToast("Mavzu o'chirildi.", "success");
-    });
-  });
-}
-
-const irFilter = document.getElementById("ishRejaGradeFilter");
-if (irFilter) {
-  irFilter.addEventListener("change", renderIshRejaTable);
-}
-
-/* ---------- FAOLIYAT MONITORING ---------- */
-function renderActivityTable() {
-  const tbody = document.getElementById("activityTableBody");
-  if (!tbody) return;
-  
-  tbody.innerHTML = "";
-  const now = Date.now();
-  currentStudents.forEach(function (s) {
-    const lastMs = s.oxirgiVaqt && s.oxirgiVaqt.toMillis ? s.oxirgiVaqt.toMillis() : 0;
-    const online = lastMs && (now - lastMs) < 90000;
-    const dot = online ? "<span class='kt-online-dot'></span>Onlayn" : "<span class='kt-offline-dot'></span>Offlayn";
-    const lastText = lastMs ? new Date(lastMs).toLocaleString("uz-UZ") : "—";
-    tbody.innerHTML +=
-      "<tr><td>" + dot + "</td><td>" + s.ism + " " + s.familiya + "</td><td>" + s.sinf + "-sinf</td>" +
-      "<td>" + (s.oxirgiBolim || "—") + "</td><td>" + lastText + "</td></tr>";
-  });
-}
-setInterval(renderActivityTable, 15000);
-
-/* ---------- DINAMIK PDF LINKLAR ---------- */
-document.addEventListener('DOMContentLoaded', () => {
-  const gradeFilter = document.getElementById('ishRejaGradeFilter');
-  const pdfCard = document.getElementById('pdfDownloadCard');
-  const ishRejaTitle = document.getElementById('ishRejaTitle');
-  const nazoratTitle = document.getElementById('nazoratTitle');
-  const btnIshReja = document.getElementById('btnMainIshReja');
-  const btnNazorat = document.getElementById('btnNazoratJavob');
-
-  if (gradeFilter) {
-    gradeFilter.addEventListener('change', (e) => {
-      const sinf = e.target.value;
-      
-      if (sinf === 'all') {
-        if (pdfCard) pdfCard.style.display = 'none';
-      } else {
-        if (pdfCard) pdfCard.style.display = 'block';
-        if (ishRejaTitle) ishRejaTitle.textContent = `📅 ${sinf}-Sinf Ish Rejasi`;
-        if (nazoratTitle) nazoratTitle.textContent = `🏆 ${sinf}-Sinf Nazorat Ishi Javoblari`;
-        if (btnIshReja) btnIshReja.href = `KT_${sinf}sinf_Ish_Reja.pdf`;
-        if (btnNazorat) btnNazorat.href = `KT_${sinf}sinf_Nazorat_Ishlari_Javoblari.pdf`;
-      }
-    });
-  }
-});
+<div id="toastContainer" class="kt-toast-container"></div>
+<script type="module" src="admin.js"></script>
+</body>
+</html>
