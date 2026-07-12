@@ -20,6 +20,7 @@
   <a class="kt-side-link active" data-view="overview">📊 Bosh sahifa</a>
   <a class="kt-side-link" data-view="addStudent">➕ O'quvchi qo'shish</a>
   <a class="kt-side-link" data-view="addAdmin">⚙️ Admin qo'shish</a>
+  <a class="kt-side-link" data-view="profile">🧑 Profil</a>
   <a class="kt-side-link" data-view="students">🏆 O'quvchilar / Reyting</a>
   <a class="kt-side-link" data-view="ishreja">📅 Ish reja</a>
   <a class="kt-side-link" data-view="nazorat_ishi">🏆 Nazorat ishi</a>
@@ -93,6 +94,30 @@
         </div>
       </form>
       <p id="addAdminMsg" class="mt-4"></p>
+    </div>
+  </section>
+
+  <!-- ADMIN PROFIL -->
+  <section class="kt-view" data-view-panel="profile">
+    <div class="kt-dash-card" style="max-width:480px;">
+      <h3>Mening profilim</h3>
+      <div class="kt-avatar-wrap">
+        <img id="adminAvatarImg" class="kt-avatar-img" src="" alt="Profil rasmi">
+        <label class="kt-avatar-edit" for="adminAvatarInput">✎</label>
+        <input type="file" id="adminAvatarInput" accept="image/*" class="hidden">
+      </div>
+      <p id="adminAvatarUploadStatus" style="text-align:center;color:var(--dim);font-size:.8rem;margin-bottom:1rem;"></p>
+      <div class="flex flex-col gap-3">
+        <div><label class="kt-field-label">Ism familiya</label><input id="adminProfIsmFamiliya" class="kt-login-input" disabled></div>
+        <div><label class="kt-field-label">ID</label><input id="adminProfId" class="kt-login-input" disabled></div>
+      </div>
+      <h3 class="mt-6">Parolni o'zgartirish</h3>
+      <form id="adminChangePassForm" class="flex flex-col gap-3">
+        <input id="adminNewPass1" class="kt-login-input" type="password" placeholder="Yangi parol (kamida 6 belgi)" required>
+        <input id="adminNewPass2" class="kt-login-input" type="password" placeholder="Yangi parolni takrorlang" required>
+        <button type="submit" class="kt-btn-primary" style="align-self:flex-start;">Saqlash</button>
+      </form>
+      <p id="adminPassChangeMsg" class="mt-2"></p>
     </div>
   </section>
 
