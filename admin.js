@@ -2,10 +2,11 @@
 // ADMIN PANEL LOGIKASI
 // ==========================================================================
 import {
-  auth, db, secondaryAuth, idToEmail,
-  onAuthStateChanged, signOut, createUserWithEmailAndPassword,
+  auth, db, storage, secondaryAuth, idToEmail,
+  onAuthStateChanged, signOut, createUserWithEmailAndPassword, updatePassword,
   doc, setDoc, getDoc, updateDoc, deleteDoc,
-  collection, query, where, onSnapshot, serverTimestamp, increment
+  collection, query, where, onSnapshot, serverTimestamp, increment,
+  ref, uploadBytes, getDownloadURL
 } from "./firebase-config.js";
 import { SYLLABUS, getLesson } from "./syllabus-data.js";
 
@@ -26,9 +27,12 @@ function showToast(message, type) {
 
 /* ---------- AUTH GUARD ---------- */
 let currentStudents = [];
+let myUid = null;
+let myData = null;
 
 onAuthStateChanged(auth, async function (user) {
   if (!user) { window.location.href = "index.html"; return; }
+  myUid = user.uid;
   try {
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (!userDoc.exists() || userDoc.data().role !== "admin") {
@@ -36,13 +40,23 @@ onAuthStateChanged(auth, async function (user) {
       setTimeout(function () { window.location.href = "index.html"; }, 1500);
       return;
     }
-    document.getElementById("adminNameLabel").textContent = userDoc.data().ism + " " + userDoc.data().familiya;
+    myData = userDoc.data();
+    document.getElementById("adminNameLabel").textContent = myData.ism + " " + myData.familiya;
+    document.getElementById("adminProfIsmFamiliya").value = myData.ism + " " + myData.familiya;
+    document.getElementById("adminProfId").value = myData.loginId || "—";
+    document.getElementById("adminAvatarImg").src = myData.rasmUrl || defaultAvatar();
     initStudentsListener();
     initCurrentLessonPanel();
   } catch (err) {
     showToast("Xatolik: " + err.code + " — " + err.message, "error");
   }
 });
+
+function defaultAvatar() {
+  return "data:image/svg+xml;utf8," + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#111b36"/><circle cx="50" cy="38" r="18" fill="#ffb347"/><path d="M15 90c5-25 25-35 35-35s30 10 35 35" fill="#ffb347"/></svg>'
+  );
+}
 
 document.getElementById("logoutBtn").addEventListener("click", function () {
   signOut(auth).then(function () { window.location.href = "index.html"; });
@@ -332,3 +346,50 @@ function renderActivityTable() {
   });
 }
 setInterval(renderActivityTable, 15000);
+
+/* ---------- ADMIN PROFIL: RASM YUKLASH ---------- */
+document.getElementById("adminAvatarInput").addEventListener("change", async function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) { showToast("Faqat rasm fayllari qabul qilinadi.", "error"); return; }
+  if (file.size > 3 * 1024 * 1024) { showToast("Rasm hajmi 3MB dan oshmasligi kerak.", "error"); return; }
+
+  const statusEl = document.getElementById("adminAvatarUploadStatus");
+  statusEl.textContent = "Yuklanmoqda...";
+  try {
+    const fileRef = ref(storage, "profiles/" + myUid + "/avatar.jpg");
+    await uploadBytes(fileRef, file);
+    const url = await getDownloadURL(fileRef);
+    await updateDoc(doc(db, "users", myUid), { rasmUrl: url });
+    document.getElementById("adminAvatarImg").src = url;
+    statusEl.textContent = "Rasm yangilandi.";
+    showToast("Profil rasmi yangilandi.", "success");
+  } catch (err) {
+    statusEl.textContent = "";
+    showToast("Rasm yuklashda xatolik: " + err.message, "error");
+  }
+});
+
+/* ---------- ADMIN PROFIL: PAROLNI O'ZGARTIRISH ---------- */
+document.getElementById("adminChangePassForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const p1 = document.getElementById("adminNewPass1").value;
+  const p2 = document.getElementById("adminNewPass2").value;
+  const msgBox = document.getElementById("adminPassChangeMsg");
+  if (p1.length < 6) { msgBox.textContent = "Parol kamida 6 ta belgi bo'lishi kerak."; msgBox.className = "kt-error-text mt-2"; return; }
+  if (p1 !== p2) { msgBox.textContent = "Parollar mos emas."; msgBox.className = "kt-error-text mt-2"; return; }
+  try {
+    await updatePassword(auth.currentUser, p1);
+    msgBox.textContent = "Parol muvaffaqiyatli yangilandi.";
+    msgBox.className = "mt-2";
+    msgBox.style.color = "var(--cyan)";
+    document.getElementById("adminChangePassForm").reset();
+  } catch (err) {
+    if (err.code === "auth/requires-recent-login") {
+      msgBox.textContent = "Xavfsizlik uchun avval tizimdan chiqib, qayta kiring, so'ng parolni o'zgartiring.";
+    } else {
+      msgBox.textContent = "Xatolik: " + err.message;
+    }
+    msgBox.className = "kt-error-text mt-2";
+  }
+});
