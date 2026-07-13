@@ -221,7 +221,10 @@ async function loadRating() {
   }
 }
 
-/* ---------- AI YORDAMCHI (kengaytirilgan) ---------- */
+/* ---------- AI YORDAMCHI (haqiqiy AI + zaxira lokal bot) ---------- */
+// Cloudflare Worker'ni sozlagach, shu manzilni O'ZINGIZNIKIGA almashtiring:
+const AI_WORKER_URL = "https://square-haze-8ece.yusufaluz1.workers.dev";
+
 const AI_GREETINGS = ["salom", "assalomu alaykum", "hi", "hello", "hey", "yaxshimisiz"];
 const AI_THANKS = ["rahmat", "tashakkur", "raxmat"];
 
@@ -294,5 +297,41 @@ function sendChat() {
   if (!text) return;
   addChatMessage(text, "user");
   input.value = "";
-  setTimeout(function () { addChatMessage(findAiAnswer(text), "bot"); }, 400);
+
+  const typingId = "typing-" + Date.now();
+  const box = document.getElementById("chatMessages");
+  const typingEl = document.createElement("div");
+  typingEl.className = "kt-chat-msg bot";
+  typingEl.id = typingId;
+  typingEl.textContent = "Yozmoqda...";
+  box.appendChild(typingEl);
+  box.scrollTop = box.scrollHeight;
+
+  askRealAI(text)
+    .then(function (reply) {
+      const el = document.getElementById(typingId);
+      if (el) el.remove();
+      addChatMessage(reply, "bot");
+    })
+    .catch(function () {
+      // Worker hali sozlanmagan yoki xato — lokal oddiy botga qaytamiz
+      const el = document.getElementById(typingId);
+      if (el) el.remove();
+      addChatMessage(findAiAnswer(text), "bot");
+    });
+}
+
+async function askRealAI(text) {
+  if (!AI_WORKER_URL || AI_WORKER_URL.indexOf("SIZNING-WORKER-NOMINGIZ") !== -1) {
+    throw new Error("AI Worker hali sozlanmagan");
+  }
+  const res = await fetch(AI_WORKER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: text })
+  });
+  if (!res.ok) throw new Error("AI so'rovi muvaffaqiyatsiz");
+  const data = await res.json();
+  if (!data.reply) throw new Error("Javob bo'sh");
+  return data.reply;
 }
