@@ -63,3 +63,11 @@
   .kt-sidebar.open { transform: translateX(0); }
   .kt-main { margin-left: 0; padding: 1.4rem; }
 }
+/* ===== ADMIN AVATAR QO'SHIMCHA ===== */
+.hidden {
+  display: none !important;
+}
+
+#adminAvatarUploadStatus {
+  transition: color 0.3s ease;
+}
