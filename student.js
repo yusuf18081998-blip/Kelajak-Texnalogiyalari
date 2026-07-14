@@ -332,8 +332,8 @@ async function askRealAI(text) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: text })
   });
-  if (!res.ok) throw new Error("AI so'rovi muvaffaqiyatsiz");
-  const data = await res.json();
+  const data = await res.json().catch(function () { return {}; });
+  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
   if (!data.reply) throw new Error("Javob bo'sh");
   return data.reply;
 }
