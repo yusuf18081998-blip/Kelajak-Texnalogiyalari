@@ -1,5 +1,5 @@
 // ==========================================================================
-// O'QUVCHI PANELI LOGIKASI
+// O'QUVCHI PANELI LOGIKASI (YANGILANGAN: O'YINLAR BO'LIMI BILAN)
 // ==========================================================================
 import {
   auth, db, storage,
@@ -60,6 +60,7 @@ onAuthStateChanged(auth, async function (user) {
 
     listenCurrentLesson();
     loadRating();
+    initGamesSection(); // O'yinlar bo'limini ishga tushirish
     heartbeat("Joriy mavzu");
     setInterval(function () { heartbeat(currentSectionName); }, 30000);
   } catch (error) {
@@ -83,12 +84,12 @@ async function heartbeat(sectionName) {
   if (!myUid) return;
   try {
     await updateDoc(doc(db, "users", myUid), { oxirgiBolim: sectionName, oxirgiVaqt: new Date() });
-  } catch (err) { /* jim turadi — faoliyat yozib bo'lmasa ham sahifa ishlashda davom etadi */ }
+  } catch (err) { /* jim turadi */ }
 }
 
 /* ---------- SIDEBAR NAVIGATSIYA ---------- */
 const sideLinks = Array.from(document.querySelectorAll(".kt-side-link"));
-const sectionNames = { today: "Joriy mavzu", profile: "Profil", rating: "Reyting", ai: "AI yordamchi" };
+const sectionNames = { today: "Joriy mavzu", profile: "Profil", rating: "Reyting", ai: "AI yordamchi", games: "O'yinlar bo'limi" };
 sideLinks.forEach(function (link) {
   link.addEventListener("click", function () {
     sideLinks.forEach(function (l) { l.classList.remove("active"); });
@@ -221,10 +222,81 @@ async function loadRating() {
   }
 }
 
-/* ---------- AI YORDAMCHI (haqiqiy AI + zaxira lokal bot) ---------- */
-// Cloudflare Worker'ni sozlagach, shu manzilni O'ZINGIZNIKIGA almashtiring:
-const AI_WORKER_URL = "https://square-haze-8ece.yusufaluz1.workers.dev";
+/* ---------- O'YINLAR BO'LIMI INTEGRATSIYASI ---------- */
+function initGamesSection() {
+  const gamesList = [
+    { name: "Kahoot!", cat: "Viktorina", url: "https://kahoot.com" },
+    { name: "Quizizz", cat: "Test va viktorina", url: "https://quizizz.com" },
+    { name: "Blooket", cat: "O'yinli viktorina", url: "https://www.blooket.com" },
+    { name: "Gimkit", cat: "Strategik viktorina", url: "https://www.gimkit.com" },
+    { name: "Wordwall", cat: "Ta'limiy o'yinlar", url: "https://wordwall.net" },
+    { name: "Baamboozle", cat: "Jamoaviy o'yin", url: "https://www.baamboozle.com" },
+    { name: "Scratch", cat: "Dasturlash va o'yin yaratish", url: "https://scratch.mit.edu" },
+    { name: "Code.org", cat: "Dasturlash", url: "https://code.org" },
+    { name: "Blockly Games", cat: "Dasturlash asoslari", url: "https://blockly.games" },
+    { name: "CodeCombat", cat: "Python va JavaScript", url: "https://codecombat.com" },
+    { name: "Tynker", cat: "Kodlash", url: "https://www.tynker.com" },
+    { name: "CS First", cat: "Scratch asosida kurslar", url: "https://csfirst.withgoogle.com" },
+    { name: "MakeCode", cat: "Micro:bit va Minecraft", url: "https://makecode.microsoft.com" },
+    { name: "Lightbot", cat: "Algoritmlar", url: "https://lightbot.com" },
+    { name: "RoboZZle", cat: "Mantiqiy kodlash", url: "https://robozzle.com" },
+    { name: "CodinGame", cat: "Dasturlash musobaqalari", url: "https://www.codingame.com" },
+    { name: "Quizlet Live", cat: "Jamoaviy o'rganish", url: "https://quizlet.com/live" },
+    { name: "Genially", cat: "Escape Room va interaktiv darslar", url: "https://genially.com" },
+    { name: "Flippity", cat: "Bingo, viktorina va boshqalar", url: "https://flippity.net" },
+    { name: "Word Search Labs", cat: "So'z qidirish", url: "https://thewordsearch.com" }
+  ];
 
+  const grid = document.getElementById("portalGamesGrid");
+  const searchInput = document.getElementById("portalGameSearch");
+  if (!grid) return;
+
+  function render(data) {
+    grid.innerHTML = "";
+    data.forEach(function (game) {
+      const card = document.createElement("div");
+      card.className = "kt-dash-card kt-game-item";
+      card.style.display = "flex";
+      card.style.flexDirection = "column";
+      card.style.justifyContent = "space-between";
+      card.style.border = "1px solid rgba(45,212,255,0.15)";
+      
+      card.innerHTML = `
+        <div>
+          <h4 style="color:var(--cyan);font-family:'Orbitron',sans-serif;margin-bottom:0.4rem;font-size:1.2rem;">${game.name}</h4>
+          <span style="font-size:0.8rem;background:rgba(45,212,255,0.1);color:var(--cyan);padding:3px 10px;border-radius:10px;">${game.cat}</span>
+        </div>
+        <a href="${game.url}" target="_blank" class="kt-btn-primary" style="margin-top:1.2rem;text-align:center;text-decoration:none;display:block;font-size:0.85rem;" data-game-name="${game.name}">
+          Kirish 🚀
+        </a>
+      `;
+      grid.appendChild(card);
+    });
+
+    // O'yinga bosilganda oxirgi harakatni Firebase-ga yuborish
+    grid.querySelectorAll("a").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        const gameName = e.target.getAttribute("data-game-name");
+        heartbeat("O'yin: " + gameName);
+      });
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", function (e) {
+      const val = e.target.value.toLowerCase();
+      const filtered = gamesList.filter(function (g) {
+        return g.name.toLowerCase().includes(val) || g.cat.toLowerCase().includes(val);
+      });
+      render(filtered);
+    });
+  }
+
+  render(gamesList);
+}
+
+/* ---------- AI YORDAMCHI (haqiqiy AI + zaxira lokal bot) ---------- */
+const AI_WORKER_URL = "https://square-haze-8ece.yusufaluz1.workers.dev";
 const AI_GREETINGS = ["salom", "assalomu alaykum", "hi", "hello", "hey", "yaxshimisiz"];
 const AI_THANKS = ["rahmat", "tashakkur", "raxmat"];
 
@@ -255,7 +327,6 @@ function findAiAnswer(text) {
     if (item.keys.some(function (k) { return lower.indexOf(k) !== -1; })) return item.answer;
   }
 
-  // Ish rejadagi darslar orasidan mos keluvchi mavzuni qidiramiz
   if (myData) {
     const flat = flattenGrade(myData.sinf);
     const words = text.toLowerCase().split(/\s+/).filter(function (w) { return w.length > 3; });
@@ -314,7 +385,6 @@ function sendChat() {
       addChatMessage(reply, "bot");
     })
     .catch(function (err) {
-      // Worker hali sozlanmagan yoki xato — sababini ko'rsatamiz va lokal botga qaytamiz
       console.error("AI Worker xatosi:", err);
       showToast("Haqiqiy AI ishlamadi: " + err.message + " (oddiy botga o'tildi)", "error");
       const el = document.getElementById(typingId);
