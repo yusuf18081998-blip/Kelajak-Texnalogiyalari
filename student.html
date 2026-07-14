@@ -9,6 +9,14 @@
 <link rel="stylesheet" href="utilities.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="app.css">
+<style>
+  /* O'yinlar kartalari gridi uchun qo'shimcha uslub (kerak bo'lsa style.css faylingizga qo'shishingiz ham mumkin) */
+  .kt-games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+  }
+</style>
 </head>
 <body class="kt-body kt-dash-body">
 
@@ -20,6 +28,8 @@
   <a class="kt-side-link active" data-view="today">📘 Bugungi mavzu</a>
   <a class="kt-side-link" data-view="profile">🧑 Profil</a>
   <a class="kt-side-link" data-view="rating">🏆 Reyting</a>
+  <!-- Yangi o'yinlar bo'limi navigatsiya tugmasi -->
+  <a class="kt-side-link" data-view="games">🎮 O'yinlar bo'limi</a>
   <a class="kt-side-link" data-view="ai">🤖 AI yordamchi</a>
   <div class="kt-side-foot">
     <p id="stuNameLabel" style="color:var(--dim);font-size:.8rem;margin-bottom:.7rem;">Yuklanmoqda...</p>
@@ -88,6 +98,23 @@
           <tbody id="ratingTableBody"></tbody>
         </table>
       </div>
+    </div>
+  </section>
+
+  <!-- O'YINLAR BO'LIMI -->
+  <section class="kt-view" data-view-panel="games">
+    <div class="kt-dash-card mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3>O'yinli Ta'lim Portali</h3>
+          <p style="color:var(--dim);font-size:.82rem;">Darslarni yanada qiziqarli qilish uchun maxsus mantiqiy, ta'limiy va dasturlash o'yinlari.</p>
+        </div>
+        <input id="portalGameSearch" class="kt-login-input" style="max-width:300px;" placeholder="O'yin nomini qidiring...">
+      </div>
+    </div>
+    
+    <div class="kt-games-grid" id="portalGamesGrid">
+      <!-- O'yinlar student.js orqali avtomatik joylanadi -->
     </div>
   </section>
 
