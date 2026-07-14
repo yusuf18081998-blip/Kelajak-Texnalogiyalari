@@ -1,5 +1,5 @@
 // ==========================================================================
-// ADMIN PANEL LOGIKASI
+// ADMIN PANEL LOGIKASI (YANGILANGAN: MUAMMOLAR TO'G'RILANDI)
 // ==========================================================================
 import {
   auth, db, storage, secondaryAuth, idToEmail,
@@ -13,6 +13,7 @@ import { SYLLABUS, getLesson } from "./syllabus-data.js";
 /* ---------- TOAST ---------- */
 function showToast(message, type) {
   const container = document.getElementById("toastContainer");
+  if (!container) return;
   const toast = document.createElement("div");
   toast.className = "kt-toast" + (type === "error" ? " error" : "");
   toast.innerHTML = "<strong>" + (type === "error" ? "Xato: " : "Bajarildi: ") + "</strong>" + message;
@@ -41,10 +42,17 @@ onAuthStateChanged(auth, async function (user) {
       return;
     }
     myData = userDoc.data();
-    document.getElementById("adminNameLabel").textContent = myData.ism + " " + myData.familiya;
-    document.getElementById("adminProfIsmFamiliya").value = myData.ism + " " + myData.familiya;
+    
+    // Admin ism familiyasini xavfsiz tekshirish
+    const adminIsm = myData.ism || "";
+    const adminFam = myData.familiya || myData.familya || "";
+    const toliqIsm = (adminIsm + " " + adminFam).trim() || "Admin";
+
+    document.getElementById("adminNameLabel").textContent = toliqIsm;
+    document.getElementById("adminProfIsmFamiliya").value = toliqIsm;
     document.getElementById("adminProfId").value = myData.loginId || "—";
     document.getElementById("adminAvatarImg").src = myData.rasmUrl || defaultAvatar();
+    
     initStudentsListener();
     initCurrentLessonPanel();
   } catch (err) {
@@ -203,9 +211,15 @@ function renderStudentsTable() {
     .filter(function (s) { return filter === "all" || s.sinf === filter; })
     .forEach(function (s, i) {
       const rankClass = i === 0 ? "kt-rank-badge kt-rank-1" : "kt-rank-badge";
+      
+      // Xavfsiz ism va familiya tekshiruvi (familya yoki familiya)
+      const sIsm = s.ism || "";
+      const sFam = s.familiya || s.familya || "";
+      const toliqIsm = (sIsm + " " + sFam).trim() || "O'quvchi";
+
       tbody.innerHTML +=
         "<tr><td><span class='" + rankClass + "'>" + (i + 1) + "</span></td>" +
-        "<td>" + s.ism + " " + s.familiya + "</td>" +
+        "<td>" + toliqIsm + "</td>" +
         "<td>" + s.sinf + "-sinf</td>" +
         "<td>" + (s.loginId || "—") + "</td>" +
         "<td>" + (s.ball || 0) + "</td>" +
@@ -333,6 +347,7 @@ function initCurrentLessonPanel() {
 /* ---------- FAOLIYAT MONITORING ---------- */
 function renderActivityTable() {
   const tbody = document.getElementById("activityTableBody");
+  if (!tbody) return;
   tbody.innerHTML = "";
   const now = Date.now();
   currentStudents.forEach(function (s) {
@@ -340,14 +355,20 @@ function renderActivityTable() {
     const online = lastMs && (now - lastMs) < 90000;
     const dot = online ? "<span class='kt-online-dot'></span>Onlayn" : "<span class='kt-offline-dot'></span>Offlayn";
     const lastText = lastMs ? new Date(lastMs).toLocaleString("uz-UZ") : "—";
+    
+    // Ism-familya xavfsiz tekshiruvi
+    const sIsm = s.ism || "";
+    const sFam = s.familiya || s.familya || "";
+    const toliqIsm = (sIsm + " " + sFam).trim() || "O'quvchi";
+
     tbody.innerHTML +=
-      "<tr><td>" + dot + "</td><td>" + s.ism + " " + s.familiya + "</td><td>" + s.sinf + "-sinf</td>" +
+      "<tr><td>" + dot + "</td><td>" + toliqIsm + "</td><td>" + s.sinf + "-sinf</td>" +
       "<td>" + (s.oxirgiBolim || "—") + "</td><td>" + lastText + "</td></tr>";
   });
 }
 setInterval(renderActivityTable, 15000);
 
-/* ---------- ADMIN PROFIL: RASM YUKLASH ---------- */
+/* ---------- ADMIN PROFIL: RASM YUKLASH (YAXSHILANGAN) ---------- */
 document.getElementById("adminAvatarInput").addEventListener("change", async function (e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -356,16 +377,25 @@ document.getElementById("adminAvatarInput").addEventListener("change", async fun
 
   const statusEl = document.getElementById("adminAvatarUploadStatus");
   statusEl.textContent = "Yuklanmoqda...";
+  
   try {
+    console.log("Admin rasmini yuklash boshlandi... UID:", myUid);
     const fileRef = ref(storage, "profiles/" + myUid + "/avatar.jpg");
-    await uploadBytes(fileRef, file);
+    
+    const uploadResult = await uploadBytes(fileRef, file);
+    console.log("Admin rasmi yuklandi, URL olinmoqda...", uploadResult);
+    
     const url = await getDownloadURL(fileRef);
+    console.log("Admin yangi rasm URL'i:", url);
+    
     await updateDoc(doc(db, "users", myUid), { rasmUrl: url });
     document.getElementById("adminAvatarImg").src = url;
+    
     statusEl.textContent = "Rasm yangilandi.";
     showToast("Profil rasmi yangilandi.", "success");
   } catch (err) {
-    statusEl.textContent = "";
+    console.error("Admin rasm yuklashda xatolik:", err);
+    statusEl.textContent = "Xatolik yuz berdi.";
     showToast("Rasm yuklashda xatolik: " + err.message, "error");
   }
 });
@@ -376,7 +406,7 @@ document.getElementById("adminChangePassForm").addEventListener("submit", async 
   const p1 = document.getElementById("adminNewPass1").value;
   const p2 = document.getElementById("adminNewPass2").value;
   const msgBox = document.getElementById("adminPassChangeMsg");
-  if (p1.length < 6) { msgBox.textContent = "Parol kamida 6 ta belgi bo'lishi kerak."; msgBox.className = "kt-error-text mt-2"; return; }
+  if (p1.length < 6) { msgBox.textContent = "Parol kamida 6 ta belgi bo'lingerak."; msgBox.className = "kt-error-text mt-2"; return; }
   if (p1 !== p2) { msgBox.textContent = "Parollar mos emas."; msgBox.className = "kt-error-text mt-2"; return; }
   try {
     await updatePassword(auth.currentUser, p1);
