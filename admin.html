@@ -97,7 +97,7 @@
     </div>
   </section>
 
-  <!-- ADMIN PROFIL -->
+  <!-- ADMIN PROFIL (TUZATILGAN) -->
   <section class="kt-view" data-view-panel="profile">
     <div class="kt-dash-card" style="max-width:480px;">
       <h3>Mening profilim</h3>
@@ -107,10 +107,21 @@
         <input type="file" id="adminAvatarInput" accept="image/*" class="hidden">
       </div>
       <p id="adminAvatarUploadStatus" style="text-align:center;color:var(--dim);font-size:.8rem;margin-bottom:1rem;"></p>
-      <div class="flex flex-col gap-3">
-        <div><label class="kt-field-label">Ism familiya</label><input id="adminProfIsmFamiliya" class="kt-login-input" disabled></div>
-        <div><label class="kt-field-label">ID</label><input id="adminProfId" class="kt-login-input" disabled></div>
-      </div>
+      
+      <!-- Ism-familiyani o'zgartirish uchun yangi forma -->
+      <form id="adminProfileForm" class="flex flex-col gap-3">
+        <div>
+          <label class="kt-field-label">Ism familiya</label>
+          <input id="adminProfIsmFamiliya" class="kt-login-input" required> <!-- disabled olib tashlandi -->
+        </div>
+        <div>
+          <label class="kt-field-label">ID (O'zgartirib bo'lmaydi)</label>
+          <input id="adminProfId" class="kt-login-input" disabled>
+        </div>
+        <button type="submit" class="kt-btn-primary" style="align-self:flex-start;">Profilni saqlash</button>
+        <p id="adminProfUpdateStatus" class="mt-2" style="font-size:0.85rem;"></p>
+      </form>
+
       <h3 class="mt-6">Parolni o'zgartirish</h3>
       <form id="adminChangePassForm" class="flex flex-col gap-3">
         <input id="adminNewPass1" class="kt-login-input" type="password" placeholder="Yangi parol (kamida 6 belgi)" required>
