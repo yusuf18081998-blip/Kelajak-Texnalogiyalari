@@ -400,6 +400,50 @@ document.getElementById("adminAvatarInput").addEventListener("change", async fun
   }
 });
 
+/* ---------- ADMIN PROFIL: ISM VA FAMILIYANI YANGILASH ---------- */
+document.getElementById("adminProfileForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  
+  // Inputdan kiritilgan qiymatni olish va bo'shliqlardan tozalash
+  const toliqIsm = document.getElementById("adminProfIsmFamiliya").value.trim();
+  const statusEl = document.getElementById("adminProfUpdateStatus") || document.createElement("div");
+  
+  if (!toliqIsm) {
+    showToast("Ism va familiya bo'sh bo'lishi mumkin emas!", "error");
+    return;
+  }
+
+  // Ism va familiyani ajratib olish (masalan: "Muhammad Yusuf" -> ism: "Muhammad", familiya: "Yusuf")
+  const qismlar = toliqIsm.split(" ");
+  const yangiIsm = qismlar[0] || "";
+  const yangiFamiliya = qismlar.slice(1).join(" ") || ""; // Agar familiya kiritilmagan bo'lsa bo'sh qoladi
+
+  try {
+    statusEl.textContent = "Saqlanmoqda...";
+    statusEl.className = "mt-2 text-info";
+    
+    // Firestore'da admin ma'lumotlarini yangilash
+    // Ikkala maydonni ham (familiya va familya) yangilab qo'yamiz, muammo bo'lmasligi uchun
+    await updateDoc(doc(db, "users", myUid), {
+      ism: yangiIsm,
+      familiya: yangiFamiliya,
+      familya: yangiFamiliya 
+    });
+
+    // Sahifadagi admin ismini darhol yangilash
+    document.getElementById("adminNameLabel").textContent = toliqIsm;
+    
+    statusEl.textContent = "Ma'lumotlar muvaffaqiyatli saqlandi!";
+    statusEl.style.color = "var(--cyan)";
+    showToast("Profil ma'lumotlari yangilandi.", "success");
+  } catch (err) {
+    console.error("Admin ma'lumotlarini yangilashda xatolik:", err);
+    statusEl.textContent = "Xatolik yuz berdi.";
+    statusEl.className = "kt-error-text mt-2";
+    showToast("Ma'lumotlarni saqlashda xatolik: " + err.message, "error");
+  }
+});
+
 /* ---------- ADMIN PROFIL: PAROLNI O'ZGARTIRISH ---------- */
 document.getElementById("adminChangePassForm").addEventListener("submit", async function (e) {
   e.preventDefault();
