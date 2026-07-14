@@ -313,8 +313,10 @@ function sendChat() {
       if (el) el.remove();
       addChatMessage(reply, "bot");
     })
-    .catch(function () {
-      // Worker hali sozlanmagan yoki xato — lokal oddiy botga qaytamiz
+    .catch(function (err) {
+      // Worker hali sozlanmagan yoki xato — sababini ko'rsatamiz va lokal botga qaytamiz
+      console.error("AI Worker xatosi:", err);
+      showToast("Haqiqiy AI ishlamadi: " + err.message + " (oddiy botga o'tildi)", "error");
       const el = document.getElementById(typingId);
       if (el) el.remove();
       addChatMessage(findAiAnswer(text), "bot");
