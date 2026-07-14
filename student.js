@@ -225,6 +225,10 @@ async function loadRating() {
 /* ---------- O'YINLAR BO'LIMI INTEGRATSIYASI ---------- */
 function initGamesSection() {
   const gamesList = [
+    { name: "Kelajak Tayping", cat: "Tez yozish o'yini", url: "https://yusuf18081998-blip.github.io/Kelajak-Tayping-Game" },
+    { name: "Flexbox Froggy", cat: "CSS Layout o'yini", url: "https://flexboxfroggy.com/#uz" },
+    { name: "Grid Garden", cat: "CSS Grid o'rganish", url: "https://cssgridgarden.com/#uz" },
+    { name: "Cybersecurity Lab", cat: "Kiberxavfsizlik simulyatori", url: "https://www.pbs.org/wgbh/nova/labs/lab/cyber/" },
     { name: "Kahoot!", cat: "Viktorina", url: "https://kahoot.com" },
     { name: "Quizizz", cat: "Test va viktorina", url: "https://quizizz.com" },
     { name: "Blooket", cat: "O'yinli viktorina", url: "https://www.blooket.com" },
@@ -401,7 +405,7 @@ async function askRealAI(text) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: text })
-  });
+   });
   const data = await res.json().catch(function () { return {}; });
   if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
   if (!data.reply) throw new Error("Javob bo'sh");
