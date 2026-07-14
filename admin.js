@@ -467,3 +467,95 @@ document.getElementById("adminChangePassForm").addEventListener("submit", async 
     msgBox.className = "kt-error-text mt-2";
   }
 });
+
+// ========================================================
+// ADMIN PROFIL VA RASM MONITORING TIZIMI
+// ========================================================
+
+const avatarInput = document.getElementById('adminAvatarInput');
+const avatarImg = document.getElementById('adminAvatarImg');
+const avatarStatus = document.getElementById('adminAvatarUploadStatus');
+const profileForm = document.getElementById('adminProfileForm');
+const profIsmFamiliya = document.getElementById('adminProfIsmFamiliya');
+const profId = document.getElementById('adminProfId');
+const profStatus = document.getElementById('adminProfUpdateStatus');
+
+// 1. Sahifa yuklanganda mavjud admin ma'lumotlarini yuklash
+window.addEventListener('DOMContentLoaded', () => {
+    // Profil rasmini tiklash
+    const savedAvatar = localStorage.getItem('admin_avatar');
+    if (savedAvatar) {
+        avatarImg.src = savedAvatar;
+    } else {
+        avatarImg.src = 'default-avatar.png'; // Standart rasm logotipi
+    }
+
+    // Ism va ID ma'lumotlarini formaga to'ldirish
+    // (Agar tizimda real login ishlatsangiz joriy foydalanuvchi ma'lumotini shu yerga bog'lang)
+    const currentAdminName = localStorage.getItem('current_admin_name') || "Muhammad Yusuf Xo'jayev";
+    const currentAdminId = localStorage.getItem('current_admin_id') || "admin777";
+    
+    if(profIsmFamiliya) profIsmFamiliya.value = currentAdminName;
+    if(profId) profId.value = currentAdminId;
+});
+
+// 2. Yangi rasm yuklash va uni qayta ishlash
+if (avatarInput) {
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        
+        if (file) {
+            // Hajm chegarasi: 2MB
+            if (file.size > 2 * 1024 * 1024) {
+                avatarStatus.style.color = '#ff4a76';
+                avatarStatus.innerText = "Xato: Rasm hajmi juda katta! (Max: 2MB)";
+                return;
+            }
+
+            const reader = new FileReader();
+            avatarStatus.style.color = 'var(--dim)';
+            avatarStatus.innerText = "Yuklanmoqda...";
+
+            reader.onload = function(event) {
+                const base64Image = event.target.result;
+                
+                // Sahifadagi rasmni yangilash
+                avatarImg.src = base64Image;
+                
+                // LocalStorage tizimiga saqlash
+                localStorage.setItem('admin_avatar', base64Image);
+                
+                avatarStatus.style.color = '#00ff88';
+                avatarStatus.innerText = "Profil rasmi muvaffaqiyatli yangilandi! ✔";
+            };
+
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// 3. Ism-familiya va tekst ma'lumotlarini saqlash
+if (profileForm) {
+    profileForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const yangiIsm = profIsmFamiliya.value.trim();
+        
+        if(yangiIsm === "") {
+            profStatus.style.color = '#ff4a76';
+            profStatus.innerText = "Ism bo'sh bo'lishi mumkin emas!";
+            return;
+        }
+
+        // Tizim xotirasiga yozish
+        localStorage.setItem('current_admin_name', yangiIsm);
+        
+        // Sidebar yoki yuqoridagi labellarni ham yangilash
+        const nameLabel = document.getElementById('adminNameLabel');
+        if(nameLabel) nameLabel.innerText = yangiIsm;
+
+        profStatus.style.color = '#00ff88';
+        profStatus.innerText = "Profil ma'lumotlari muvaffaqiyatli saqlandi! ✔";
+        
+        setTimeout(() => { profStatus.innerText = ""; }, 3000);
+    });
